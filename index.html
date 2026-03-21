@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrisisStim - Générateur de stimuli</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Georgia&family=Lora:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=Noto+Sans:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --surface-alt: #eef2f6;
+      --surface-dark: #132238;
+      --text: #1a1a1a;
+      --muted: #5f6b7a;
+      --border: #d7dde5;
+      --primary: #1e3a5f;
+      --primary-strong: #10243f;
+      --accent: #e74c3c;
+      --success: #2e8b57;
+      --warning: #d48c00;
+      --shadow: 0 20px 45px rgba(20, 35, 58, 0.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --ui-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--ui-font);
+      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 180px);
+      color: var(--text);
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+      color: #fff;
+      padding: 28px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .brand p {
+      margin: 10px 0 0;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .nav-list, .toolbar-list { display: grid; gap: 10px; }
+    .nav-button, .toolbar-button {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      padding: 12px 14px;
+      border-radius: 12px;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: 0.2s ease;
+    }
+
+    .nav-button.active, .nav-button:hover, .toolbar-button:hover {
+      background: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+
+    .toolbar-note {
+      margin-top: auto;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px;
+      color: rgba(255,255,255,0.82);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .content {
+      padding: 30px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.65);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      position: sticky;
+      top: 20px;
+      z-index: 5;
+    }
+
+    .page-title h2 { margin: 0; font-size: 1.6rem; }
+    .page-title p { margin: 6px 0 0; color: var(--muted); }
+
+    .status-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .pill {
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .grid { display: grid; gap: 20px; }
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid rgba(19, 34, 56, 0.07);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .card h3, .card h4 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+
+    .card p.subtle, .subtle {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 0;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-header h3 { margin: 0; }
+
+    .field-grid { display: grid; gap: 16px; }
+    .field-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .field-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    label.field {
+      display: grid;
+      gap: 8px;
+      font-size: 0.92rem;
+      color: var(--primary-strong);
+      font-weight: 600;
+    }
+
+    input[type="text"], input[type="password"], input[type="datetime-local"], input[type="number"], input[type="url"], select, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      color: var(--text);
+      min-height: 46px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    textarea { min-height: 120px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: rgba(30,58,95,0.55);
+      box-shadow: 0 0 0 4px rgba(30,58,95,0.12);
+    }
+
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-secondary { background: var(--surface-alt); color: var(--primary-strong); border: 1px solid var(--border); }
+    .btn-danger { background: var(--accent); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-ghost { background: transparent; border: 1px dashed var(--border); color: var(--muted); }
+
+    .helper { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    .table th { color: var(--muted); font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .timeline {
+      position: relative;
+      padding: 20px 0 0;
+      overflow-x: auto;
+    }
+    .timeline-track {
+      position: relative;
+      min-height: 220px;
+      border-top: 4px solid rgba(30,58,95,0.15);
+      margin-top: 48px;
+      background-image: linear-gradient(to right, rgba(30,58,95,0.08) 1px, transparent 1px);
+      background-size: 120px 100%;
+      background-position: 0 0;
+    }
+    .timeline-tick {
+      position: absolute;
+      top: -34px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      transform: translateX(-50%);
+    }
+    .stimulus-card {
+      position: absolute;
+      top: 24px;
+      width: 190px;
+      border-radius: 14px;
+      padding: 14px;
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(20,35,58,0.16);
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+    .stimulus-card.selected { border-color: #fff; box-shadow: 0 18px 38px rgba(20,35,58,0.22); }
+    .stimulus-card small { display: block; opacity: 0.9; margin-top: 6px; }
+    .stimulus-card strong { display: block; }
+
+    .editor-layout {
+      display: grid;
+      grid-template-columns: minmax(360px, 460px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .preview-shell {
+      background: linear-gradient(180deg, #dfe8f3, #f7fafc 30%, #dde6f2);
+      border-radius: var(--radius);
+      border: 1px solid rgba(19,34,56,0.08);
+      padding: 24px;
+      min-height: 560px;
+      overflow: auto;
+    }
+    .preview-stage {
+      min-height: 100%;
+      display: grid;
+      place-items: start center;
+    }
+
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .thumb-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .thumb-card .thumb-preview {
+      min-height: 140px;
+      display: grid;
+      place-items: center;
+      background: #f5f7fb;
+      padding: 12px;
+      overflow: hidden;
+    }
+    .thumb-card .thumb-body { padding: 14px; }
+
+    .toast-stack {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      display: grid;
+      gap: 12px;
+      z-index: 50;
+    }
+    .toast {
+      min-width: 260px;
+      max-width: 420px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      background: var(--surface-dark);
+      color: #fff;
+    }
+    .toast.error { background: #8c1d18; }
+    .toast.success { background: #1f6f4f; }
+
+    .hidden { display: none !important; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { padding: 6px 10px; border-radius: 999px; background: var(--surface-alt); color: var(--primary); font-size: 0.84rem; }
+
+    .render-frame {
+      background: #fff;
+      color: #111;
+      box-shadow: 0 18px 40px rgba(16, 36, 63, 0.18);
+      overflow: hidden;
+    }
+
+    .outlook-email { width: 800px; font-family: "Segoe UI", Tahoma, sans-serif; border-radius: 16px; }
+    .outlook-topbar { background: #0078d4; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .outlook-actions { display: flex; gap: 16px; align-items: center; font-size: 12px; }
+    .outlook-body { padding: 0; background: #fff; }
+    .outlook-meta { padding: 18px 24px; border-bottom: 1px solid #dce4ed; }
+    .outlook-row { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 12px; color: #4d5b6a; margin-bottom: 8px; }
+    .outlook-row strong { color: #1d2b3a; }
+    .outlook-subject { font-size: 26px; margin: 4px 0 16px; color: #1b1b1b; }
+    .importance-dot { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: #c62828; color: #fff; align-items: center; justify-content: center; font-size: 12px; }
+    .outlook-content { padding: 26px 24px 32px; font-size: 14px; line-height: 1.6; color: #172635; }
+    .outlook-attachment { display: inline-flex; align-items: center; gap: 10px; background: #f4f7fb; border: 1px solid #d8e1eb; border-radius: 10px; padding: 10px 12px; margin-top: 16px; }
+
+    .tweet { width: 598px; border: 1px solid #eff3f4; border-radius: 18px; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #fff; }
+    .tweet-header { display: flex; gap: 12px; }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex-shrink: 0; }
+    .tweet-name { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+    .tweet-handle, .tweet-meta { color: #536471; font-size: 15px; }
+    .tweet-text { margin: 12px 0 16px; font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
+    .tweet-metrics, .tweet-actions { display: flex; justify-content: space-between; color: #536471; font-size: 13px; }
+    .tweet-divider { border-top: 1px solid #eff3f4; margin: 14px 0; }
+
+    .press-article { width: 700px; background: #fff; padding-bottom: 28px; }
+    .lm-header { border-bottom: 1px solid #dde3ea; padding: 18px 26px 14px; }
+    .lm-logo { font-family: Lora, Georgia, serif; font-size: 42px; font-weight: 700; text-align: center; color: #10243f; }
+    .lm-nav { display: flex; justify-content: center; gap: 18px; font-size: 13px; color: #384a5c; margin-top: 10px; }
+    .lm-premium { background: #fff5d7; color: #7a5c00; font-size: 12px; padding: 10px 24px; font-weight: 700; }
+    .press-body { padding: 24px 36px 0; }
+    .press-category { color: #d18b00; font-weight: 700; letter-spacing: 0.04em; font-size: 13px; text-transform: uppercase; }
+    .press-headline { font-family: Lora, Georgia, serif; font-size: 32px; line-height: 1.15; margin: 12px 0; color: #1a1a1a; }
+    .press-subheadline { font-family: Georgia, serif; font-size: 20px; line-height: 1.45; color: #404040; margin-bottom: 20px; }
+    .press-byline { display: flex; justify-content: space-between; gap: 20px; color: #536471; font-size: 14px; padding-bottom: 18px; border-bottom: 1px solid #ebeff4; }
+    .press-photo { height: 260px; background: linear-gradient(135deg, #c6d5e5, #8fa4c4); border-radius: 14px; margin: 24px 0 10px; position: relative; overflow: hidden; }
+    .press-photo::after { content: ""; position: absolute; inset: 18px; border: 1px solid rgba(255,255,255,0.25); border-radius: 10px; }
+    .press-caption { font-size: 13px; color: #5f6b7a; margin-bottom: 18px; }
+    .press-content { font-family: Georgia, serif; font-size: 18px; line-height: 1.6; color: #202020; }
+    .press-content p { margin: 0 0 18px; }
+
+    .linkedin-card { width: 555px; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .li-header { display: flex; gap: 12px; }
+    .li-meta { flex: 1; }
+    .li-name { font-weight: 700; }
+    .li-title, .li-date { color: #5f6b7a; font-size: 13px; }
+    .li-text { font-size: 14px; line-height: 1.55; color: #222; margin: 16px 0; white-space: pre-wrap; }
+    .li-see-more { color: #5f6b7a; font-weight: 600; }
+    .li-stats, .li-actions { display: flex; justify-content: space-between; color: #5f6b7a; font-size: 13px; }
+    .li-divider { border-top: 1px solid #ebebeb; margin: 12px 0; }
+    .li-actions strong { color: #5f6b7a; font-weight: 600; }
+
+    .bfm-banner { width: 1280px; height: 720px; background: radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 20%), linear-gradient(180deg, #081728 0%, #11253a 64%, #091520 100%); font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif; color: #fff; position: relative; }
+    .bfm-live { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 12px; }
+    .bfm-logo { background: #0d3a75; padding: 16px 18px; font-size: 42px; line-height: 0.9; box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+    .bfm-category { background: linear-gradient(90deg, #c8102e, #8b0000); padding: 14px 22px; font-size: 28px; letter-spacing: 0.04em; }
+    .bfm-main { position: absolute; left: 36px; right: 36px; bottom: 126px; display: grid; gap: 10px; }
+    .bfm-headline { background: linear-gradient(90deg, rgba(200,16,46,0.96), rgba(139,0,0,0.92)); padding: 24px 26px; font-size: 56px; letter-spacing: 0.02em; text-transform: uppercase; }
+    .bfm-subline { background: rgba(8,23,40,0.84); padding: 18px 24px; font-size: 30px; letter-spacing: 0.02em; }
+    .bfm-footer { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; display: grid; grid-template-columns: 180px 1fr 170px; }
+    .bfm-time { background: #0d3a75; font-size: 40px; display: grid; place-items: center; }
+    .bfm-ticker-wrap { background: #1b1b1b; overflow: hidden; display: flex; align-items: center; }
+    .bfm-ticker { white-space: nowrap; display: inline-block; padding-left: 100%; animation: marquee 18s linear infinite; font-size: 30px; }
+    .bfm-channel { background: #0d3a75; display: grid; place-items: center; font-size: 28px; }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    .authority-email { width: 800px; display: grid; grid-template-columns: 12px 1fr; font-family: "Source Sans 3", Arial, sans-serif; }
+    .authority-strip { background: #b91c1c; }
+    .authority-body { background: #fff; }
+    .authority-header { padding: 22px 24px; border-bottom: 1px solid #dbe2ea; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+    .authority-brand { display: flex; align-items: center; gap: 14px; }
+    .rf-logo { width: 56px; height: 56px; background: linear-gradient(90deg, #0033a0 33%, #fff 33%, #fff 66%, #d62828 66%); border-radius: 10px; position: relative; }
+    .rf-logo::after { content: "RF"; position: absolute; inset: 0; display: grid; place-items: center; color: #10243f; font-weight: 800; background: rgba(255,255,255,0.75); }
+    .authority-content { padding: 22px 24px 30px; color: #122438; }
+    .authority-banner { border: 1px solid #ecd4d4; border-left: 4px solid #b91c1c; padding: 14px 16px; background: #fdf4f4; margin-bottom: 18px; }
+
+    .press-release { width: 700px; background: #fff; padding: 34px 42px; font-family: Merriweather, Georgia, serif; }
+    .pr-logo { font-family: var(--ui-font); font-weight: 800; letter-spacing: 0.08em; font-size: 14px; }
+    .pr-title { font-size: 32px; line-height: 1.2; margin: 18px 0 16px; }
+    .pr-meta { color: #5f6b7a; font-size: 14px; margin-bottom: 24px; }
+    .pr-body { font-size: 17px; line-height: 1.75; color: #222; }
+    .pr-contact { margin-top: 28px; padding-top: 18px; border-top: 1px solid #d8dce3; font-family: var(--ui-font); font-size: 14px; }
+
+    .sms-shell { width: 390px; border-radius: 40px; background: #0c0d12; padding: 16px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .sms-screen { background: linear-gradient(180deg, #e9eef5, #f7f9fc); border-radius: 30px; min-height: 680px; padding: 18px; color: #111; }
+    .sms-top { text-align: center; font-weight: 700; margin-bottom: 24px; }
+    .sms-bubble { display: inline-block; background: #e5e5ea; border-radius: 18px; padding: 14px 16px; max-width: 290px; font-size: 16px; line-height: 1.4; }
+    .sms-android .sms-bubble { background: #d9fdd3; font-family: Roboto, Arial, sans-serif; }
+    .sms-time { color: #687483; font-size: 12px; margin-top: 8px; }
+
+    .preview-toolbar {
+      position: sticky;
+      top: 100px;
+      z-index: 4;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(19,34,56,0.08);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    @media (max-width: 1280px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .editor-layout, .grid.cols-2, .grid.cols-3, .field-grid.cols-2, .field-grid.cols-3 { grid-template-columns: 1fr; }
+      .topbar { position: relative; top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast-root" class="toast-stack" aria-live="polite"></div>
+  <script>
+    (() => {
+      const STORAGE_KEY = 'crisisstim_autosave_v1';
+      const SETTINGS_KEY = 'crisisstim_settings_v1';
+      const DEFAULT_MODELS = {
+        openai: ['gpt-4o', 'gpt-4o-mini'],
+        anthropic: ['claude-sonnet-4-20250514']
+      };
+      const ROLES = [
+        { value: 'journalist', label: 'Journaliste' },
+        { value: 'authority', label: 'Autorité' },
+        { value: 'client_b2b', label: 'Client B2B' },
+        { value: 'client_b2c', label: 'Client B2C' },
+        { value: 'internal', label: 'Interne' },
+        { value: 'partner', label: 'Partenaire' },
+        { value: 'attacker', label: 'Attaquant' },
+        { value: 'analyst', label: 'Analyste' }
+      ];
+      const COUNTRIES = ['FR', 'US', 'GB', 'DE', 'ES', 'IT', 'BE', 'CH', 'CA'];
+      const TIMEZONES = ['Europe/Paris', 'UTC', 'Europe/London', 'America/New_York'];
+      const CHANNEL_META = {
+        email_internal: { label: 'Email interne', color: '#2563eb', category: 'Email' },
+        email_external: { label: 'Email externe', color: '#3b82f6', category: 'Email' },
+        email_authority: { label: 'Email autorité', color: '#0f766e', category: 'Email' },
+        article_press: { label: 'Article de presse', color: '#6b7280', category: 'Presse' },
+        breaking_news_tv: { label: 'Breaking News TV', color: '#dc2626', category: 'TV' },
+        post_twitter: { label: 'Post X/Twitter', color: '#16a34a', category: 'Social' },
+        post_linkedin: { label: 'Post LinkedIn', color: '#0a66c2', category: 'Social' },
+        press_release: { label: 'Communiqué de presse', color: '#7c3aed', category: 'Corporate' },
+        sms_notification: { label: 'SMS / Notification', color: '#f59e0b', category: 'Mobile' },
+        internal_memo: { label: 'Note interne', color: '#4b5563', category: 'Corporate' }
+      };
+
+      const TEMPLATE_LIBRARY = {
+        email_internal: {
+          label: 'Outlook interne',
+          template_id: 'outlook',
+          defaults: {
+            from_name: 'Jean Dupont',
+            from_email: 'jean.dupont@client.com',
+            to: 'Comité de crise',
+            cc: 'DSI, RSSI',
+            subject: 'URGENT - Incident de sécurité en cours',
+            date: formatLocalDateTime(new Date()),
+            body: '<p>Bonjour à toutes et à tous,</p><p>Nous faisons face à un incident de cybersécurité impactant une partie du système d’information. Les équipes IT, cybersécurité et communication sont mobilisées.</p><ul><li>Isolement des postes suspects en cours</li><li>Analyse forensic initiale lancée</li><li>Point de situation à H+30</li></ul><p><strong>Consigne :</strong> ne redémarrez aucun poste et remontez tout comportement inhabituel au SOC.</p><p>Bien cordialement,<br>Jean Dupont</p>',
+            has_attachment: true,
+            attachment_name: 'Rapport_incident_v1.pdf',
+            importance: 'high'
+          },
+          fields: [
+            field('from_name', 'Expéditeur', 'text'), field('from_email', 'Email expéditeur', 'text'), field('to', 'À', 'text'), field('cc', 'Cc', 'text'), field('subject', 'Objet', 'text'), field('date', 'Date', 'text'), field('importance', 'Importance', 'select', { options: ['high', 'normal'] }), field('has_attachment', 'Pièce jointe', 'checkbox'), field('attachment_name', 'Nom PJ', 'text'), field('body', 'Corps HTML', 'textarea')
+          ]
+        },
+        article_press: {
+          label: 'Article Le Monde',
+          template_id: 'lemonde',
+          defaults: {
+            headline: 'Une cyberattaque massive paralyse le groupe X',
+            subheadline: 'Les systèmes informatiques sont dégradés depuis le début de matinée, alors que les premières investigations évoquent une intrusion sophistiquée.',
+            author: 'Par Jean Dupont',
+            date: '15 mars 2026 à 10h42',
+            category: 'Pixels',
+            body: '<p>Le groupe X a confirmé ce samedi faire face à un incident cyber majeur, ayant conduit à l’arrêt de plusieurs applications internes et services de production. Les investigations menées par les équipes de sécurité se poursuivent pour déterminer l’étendue exacte de la compromission.</p><p>Selon plusieurs sources proches du dossier, l’entreprise a réuni dès l’aube une cellule de crise associant direction générale, informatique, sécurité, communication et conseil externe. Une partie des échanges internes s’effectue désormais via des canaux de secours.</p><p>"La priorité absolue reste la continuité des activités critiques et la protection des données", assure un porte-parole du groupe. Aucun calendrier de rétablissement complet n’a encore été communiqué.</p><p>L’événement rappelle la vulnérabilité persistante des grands groupes face aux chaînes d’attaque mêlant compromission initiale, déplacement latéral et chiffrement opportuniste. Les autorités pourraient être saisies rapidement si des données personnelles se confirmaient concernées.</p>',
+            image_caption: 'Le siège du groupe X, à La Défense.',
+            read_time: '3 min de lecture',
+            is_premium: false
+          },
+          fields: [field('headline', 'Titre', 'text'), field('subheadline', 'Chapô', 'textarea'), field('author', 'Auteur', 'text'), field('date', 'Date', 'text'), field('category', 'Rubrique', 'text'), field('read_time', 'Temps de lecture', 'text'), field('is_premium', 'Article abonné', 'checkbox'), field('image_caption', 'Légende photo', 'text'), field('body', 'Corps HTML', 'textarea')]
+        },
+        post_twitter: {
+          label: 'Post X/Twitter',
+          template_id: 'twitter',
+          defaults: {
+            display_name: 'Jean Dupont',
+            handle: '@jeandupont',
+            verified: true,
+            verified_type: 'blue',
+            avatar_initials: 'JD',
+            avatar_color: '#1da1f2',
+            text: 'Le groupe X confirme un incident cyber majeur. Les premiers éléments suggèrent un impact opérationnel important. Les prochaines heures seront décisives pour mesurer l’ampleur réelle de la compromission. #cybersecurity #crisis',
+            date: '8:32 AM · Mar 15, 2026',
+            retweets: 1243,
+            quotes: 89,
+            likes: 4521,
+            views: 125000,
+            replies: 312,
+            has_image: false
+          },
+          fields: [field('display_name', 'Nom affiché', 'text'), field('handle', 'Handle', 'text'), field('verified', 'Compte vérifié', 'checkbox'), field('verified_type', 'Type de badge', 'select', { options: ['blue', 'gold', 'grey'] }), field('avatar_initials', 'Initiales avatar', 'text'), field('avatar_color', 'Couleur avatar', 'text'), field('text', 'Texte', 'textarea'), field('date', 'Date', 'text'), field('retweets', 'Retweets', 'number'), field('quotes', 'Quotes', 'number'), field('likes', 'Likes', 'number'), field('views', 'Vues', 'number'), field('replies', 'Réponses', 'number')]
+        },
+        post_linkedin: {
+          label: 'Post LinkedIn',
+          template_id: 'linkedin',
+          defaults: {
+            display_name: 'Jean Dupont',
+            title: 'Journaliste cybersécurité',
+            avatar_initials: 'JD',
+            avatar_color: '#0A66C2',
+            text: 'Les crises cyber ne se jouent plus uniquement sur le terrain technique. Elles se jouent aussi dans la vitesse de coordination entre IT, sécurité, juridique, communication et direction générale.\n\nDans le cas du groupe X, les premières heures vont être structurantes : cartographier les impacts, stabiliser les opérations critiques et donner un cap clair aux parties prenantes.\n\nLes organisations qui préparent leurs stimuli, leurs messages et leurs routines décisionnelles en amont gagnent un temps précieux. #cybersecurity #resilience #crisismanagement',
+            date: '2 h',
+            reactions_count: 234,
+            comments_count: 45,
+            reposts_count: 12,
+            reaction_types: ['👍', '👏', '💡']
+          },
+          fields: [field('display_name', 'Nom affiché', 'text'), field('title', 'Titre', 'text'), field('avatar_initials', 'Initiales avatar', 'text'), field('avatar_color', 'Couleur avatar', 'text'), field('text', 'Texte', 'textarea'), field('date', 'Date relative', 'text'), field('reactions_count', 'Réactions', 'number'), field('comments_count', 'Commentaires', 'number'), field('reposts_count', 'Republications', 'number'), field('reaction_types', 'Réactions (JSON array)', 'textarea')]
+        },
+        breaking_news_tv: {
+          label: 'BFM Breaking News',
+          template_id: 'bfm',
+          defaults: {
+            headline: 'CYBERATTAQUE MASSIVE CONTRE LE GROUPE X',
+            subline: 'Les systèmes sont paralysés depuis ce matin',
+            ticker: 'Le groupe X confirme un incident majeur - Une cellule de crise a été activée - Les opérations prioritaires basculent sur des procédures manuelles',
+            time: '10:42',
+            category: 'ALERTE INFO'
+          },
+          fields: [field('headline', 'Titre', 'text'), field('subline', 'Sous-titre', 'text'), field('ticker', 'Ticker', 'textarea'), field('time', 'Heure', 'text'), field('category', 'Catégorie', 'text')]
+        },
+        email_authority: {
+          label: 'Alerte ANSSI / CERT-FR',
+          template_id: 'anssi',
+          defaults: {
+            reference: 'CERTFR-2026-ALE-003',
+            from_name: 'CERT-FR',
+            from_email: 'cert-fr@ssi.gouv.fr',
+            to: 'RSSI - Groupe X',
+            subject: 'Alerte - Vulnérabilité critique exploitée activement',
+            date: '15 mars 2026',
+            body: '<p>Le CERT-FR a connaissance d’une exploitation active visant des environnements exposés sur Internet.</p><p><strong>Systèmes potentiellement affectés :</strong></p><ul><li>Serveurs VPN exposés</li><li>Concentrateurs d’accès distants</li><li>Services d’administration non segmentés</li></ul><p><strong>Recommandations immédiates :</strong></p><ul><li>Appliquer les correctifs disponibles</li><li>Réinitialiser les secrets associés</li><li>Rechercher les indicateurs de compromission joints</li></ul>',
+            severity: 'critical'
+          },
+          fields: [field('reference', 'Référence', 'text'), field('from_name', 'Nom expéditeur', 'text'), field('from_email', 'Email expéditeur', 'text'), field('to', 'Destinataire', 'text'), field('subject', 'Objet', 'text'), field('date', 'Date', 'text'), field('severity', 'Sévérité', 'select', { options: ['critical', 'high', 'medium'] }), field('body', 'Corps HTML', 'textarea')]
+        },
+        press_release: {
+          label: 'Communiqué de presse',
+          template_id: 'press_release',
+          defaults: {
+            organization: 'Groupe X',
+            logo_text: 'GROUPE X',
+            logo_color: '#003366',
+            date: 'Paris, le 15 mars 2026',
+            title: 'Communiqué de presse - Incident de sécurité',
+            body: '<p>Le Groupe X confirme avoir détecté un incident de cybersécurité ayant affecté une partie limitée de son système d’information. Dès l’identification de l’événement, les dispositifs de réponse à incident ont été activés et des experts externes mobilisés.</p><p>Les équipes travaillent à restaurer progressivement les services prioritaires, tout en poursuivant les analyses techniques destinées à qualifier l’origine et l’étendue de l’incident. À ce stade, l’entreprise poursuit ses opérations essentielles selon des procédures adaptées.</p><p>Le Groupe X agit avec transparence auprès des autorités compétentes et informera ses parties prenantes de toute évolution significative.</p>',
+            contact_name: 'Service Communication',
+            contact_email: 'presse@groupex.com',
+            contact_phone: '+33 1 00 00 00 00'
+          },
+          fields: [field('organization', 'Organisation', 'text'), field('logo_text', 'Texte logo', 'text'), field('logo_color', 'Couleur logo', 'text'), field('date', 'Date', 'text'), field('title', 'Titre', 'text'), field('body', 'Corps HTML', 'textarea'), field('contact_name', 'Contact', 'text'), field('contact_email', 'Email contact', 'text'), field('contact_phone', 'Téléphone', 'text')]
+        },
+        sms_notification: {
+          label: 'SMS / Notification',
+          template_id: 'sms',
+          defaults: {
+            sender: 'Alerte Sécurité',
+            text: 'Votre compte a fait l’objet d’un accès non autorisé suspect. Merci de réinitialiser votre mot de passe et de contacter le support sécurité.',
+            time: '08:32',
+            device: 'iphone'
+          },
+          fields: [field('sender', 'Expéditeur', 'text'), field('text', 'Texte', 'textarea'), field('time', 'Heure', 'text'), field('device', 'Appareil', 'select', { options: ['iphone', 'android'] })]
+        }
+      };
+
+      const appState = {
+        route: 'settings',
+        selectedStimulusId: null,
+        slideshowIndex: 0,
+        scenario: loadInitialScenario(),
+        toasts: []
+      };
+
+      const App = {
+        init() {
+          this.bindBeforeUnload();
+          this.startAutosave();
+          this.render();
+        },
+        bindBeforeUnload() {
+          window.addEventListener('beforeunload', () => saveLocal());
+        },
+        startAutosave() {
+          setInterval(() => saveLocal(false), 30000);
+        },
+        render() {
+          const root = document.getElementById('app');
+          root.innerHTML = renderAppShell();
+          bindGlobalEvents();
+          renderToasts();
+        }
+      };
+
+      function field(key, label, type, extra = {}) { return { key, label, type, ...extra }; }
+
+      function uid(prefix = 'id') {
+        return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36).slice(-4)}`;
+      }
+
+      function formatLocalDateTime(date) {
+        const d = new Date(date);
+        const pad = (value) => String(value).padStart(2, '0');
+        return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+
+      function defaultScenario() {
+        const actors = [
+          { id: uid('actor'), name: 'Jean Dupont', role: 'journalist', organization: 'Le Monde', title: 'Journaliste, rubrique Pixels', country: 'FR', avatar_initials: 'JD', avatar_url: '' },
+          { id: uid('actor'), name: 'Claire Martin', role: 'internal', organization: 'Groupe X', title: 'Directrice de crise cyber', country: 'FR', avatar_initials: 'CM', avatar_url: '' },
+          { id: uid('actor'), name: 'CERT-FR', role: 'authority', organization: 'ANSSI', title: 'Centre gouvernemental de veille, d’alerte et de réponse', country: 'FR', avatar_initials: 'CF', avatar_url: '' }
+        ];
+        const scenario = {
+          id: uid('scenario'),
+          name: 'Exercice ransomware - ClientX',
+          client: { name: 'Client X', sector: 'Banque', country: 'FR', logo_url: '' },
+          scenario: { type: 'Ransomware', summary: 'Une attaque par ransomware touche le système d’information d’un groupe du CAC40. Les opérations critiques sont perturbées, la presse commence à relayer l’incident et les autorités sont alertées.', start_date: '2026-03-15T08:00', timezone: 'Europe/Paris' },
+          actors,
+          stimuli: [],
+          settings: { language: 'fr', ai_provider: 'openai', ai_model: 'gpt-4o', ai_api_key: '' }
+        };
+        const samples = [
+          makeStimulus('email_internal', actors[1].id, 0),
+          makeStimulus('article_press', actors[0].id, 120),
+          makeStimulus('post_twitter', actors[0].id, 135),
+          makeStimulus('breaking_news_tv', actors[0].id, 165),
+          makeStimulus('email_authority', actors[2].id, 180),
+          makeStimulus('press_release', actors[1].id, 240)
+        ];
+        scenario.stimuli = samples;
+        return scenario;
+      }
+
+      function makeStimulus(channel, actorId, offsetMinutes) {
+        const template = TEMPLATE_LIBRARY[channel] || TEMPLATE_LIBRARY.email_internal;
+        return {
+          id: uid('stimulus'),
+          timestamp_offset_minutes: offsetMinutes,
+          channel,
+          template_id: template.template_id,
+          actor_id: actorId,
+          status: 'draft',
+          fields: deepClone(template.defaults),
+          generated_text: {},
+          manual_overrides: {}
+        };
+      }
+
+      function loadInitialScenario() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+        let scenario = defaultScenario();
+        if (saved) {
+          try {
+            scenario = mergeScenario(JSON.parse(saved));
+          } catch (error) {
+            console.warn('Impossible de restaurer le scénario sauvegardé.', error);
+          }
+        }
+        if (settings) {
+          scenario.settings = { ...scenario.settings, ...settings };
+        }
+        if (!scenario.stimuli.length) scenario.stimuli = [makeStimulus('email_internal', scenario.actors[0]?.id || uid('actor'), 0)];
+        return scenario;
+      }
+
+      function mergeScenario(input) {
+        const base = defaultScenario();
+        const merged = {
+          ...base,
+          ...input,
+          client: { ...base.client, ...(input.client || {}) },
+          scenario: { ...base.scenario, ...(input.scenario || {}) },
+          settings: { ...base.settings, ...(input.settings || {}) },
+          actors: Array.isArray(input.actors) && input.actors.length ? input.actors : base.actors,
+          stimuli: Array.isArray(input.stimuli) ? input.stimuli.map(normalizeStimulus) : base.stimuli
+        };
+        return merged;
+      }
+
+      function normalizeStimulus(stimulus) {
+        const library = TEMPLATE_LIBRARY[stimulus.channel] || TEMPLATE_LIBRARY.email_internal;
+        return {
+          id: stimulus.id || uid('stimulus'),
+          timestamp_offset_minutes: Number(stimulus.timestamp_offset_minutes || 0),
+          channel: stimulus.channel || 'email_internal',
+          template_id: stimulus.template_id || library.template_id,
+          actor_id: stimulus.actor_id || appState?.scenario?.actors?.[0]?.id || '',
+          status: stimulus.status || 'draft',
+          fields: { ...deepClone(library.defaults), ...(stimulus.fields || {}) },
+          generated_text: stimulus.generated_text || {},
+          manual_overrides: stimulus.manual_overrides || {}
+        };
+      }
+
+      function deepClone(data) {
+        return JSON.parse(JSON.stringify(data));
+      }
+
+      function saveLocal(showToast = true) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.scenario));
+          localStorage.setItem(SETTINGS_KEY, JSON.stringify(appState.scenario.settings));
+          if (showToast) pushToast('Scénario enregistré localement.', 'success');
+        } catch (error) {
+          pushToast(`Échec de la sauvegarde locale : ${error.message}`, 'error');
+        }
+      }
+
+      function pushToast(message, type = 'success') {
+        const id = uid('toast');
+        appState.toasts.push({ id, message, type });
+        renderToasts();
+        setTimeout(() => {
+          appState.toasts = appState.toasts.filter((toast) => toast.id !== id);
+          renderToasts();
+        }, 4200);
+      }
+
+      function renderToasts() {
+        const root = document.getElementById('toast-root');
+        root.innerHTML = appState.toasts.map((toast) => `<div class="toast ${toast.type}">${escapeHtml(toast.message)}</div>`).join('');
+      }
+
+      function renderAppShell() {
+        return `
+          <div class="app-shell">
+            <aside class="sidebar">
+              <div class="brand">
+                <h1>CrisisStim</h1>
+                <p>Générateur autonome de stimuli pour exercices de crise cyber, en fichier HTML unique et sans serveur.</p>
+              </div>
+
+              <div>
+                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">Navigation</div>
+                <div class="nav-list">
+                  ${renderNavButton('settings', 'Paramètres', 'API & langue')}
+                  ${renderNavButton('scenario', 'Scénario', 'Client, contexte, acteurs')}
+                  ${renderNavButton('stimuli', 'Stimuli', 'Timeline & édition')}
+                  ${renderNavButton('preview', 'Prévisualisation', 'Plein écran & export')}
+                </div>
+              </div>
+
+              <div>
+                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">Outils globaux</div>
+                <div class="toolbar-list">
+                  <button class="toolbar-button" data-action="new-scenario">Nouveau scénario <span>↺</span></button>
+                  <button class="toolbar-button" data-action="save-json">Sauvegarder JSON <span>⇩</span></button>
+                  <button class="toolbar-button" data-action="load-json">Charger JSON <span>⇧</span></button>
+                  <button class="toolbar-button" data-action="save-local">Sauvegarde locale <span>💾</span></button>
+                  <button class="toolbar-button" data-action="export-all">Export complet ZIP <span>🗜️</span></button>
+                </div>
+              </div>
+
+              <div class="toolbar-note">
+                <strong>Confidentialité.</strong><br>
+                Votre clé API est stockée uniquement dans le navigateur (localStorage) et n’est envoyée qu’au fournisseur AI sélectionné lors des appels de génération.
+              </div>
+            </aside>
+
+            <main class="content">
+              <section class="topbar">
+                <div class="page-title">
+                  <h2>${viewConfig().title}</h2>
+                  <p>${viewConfig().subtitle}</p>
+                </div>
+                <div class="status-pills">
+                  <span class="pill">${escapeHtml(appState.scenario.name)}</span>
+                  <span class="pill">${appState.scenario.stimuli.length} stimuli</span>
+                  <span class="pill">${appState.scenario.actors.length} acteurs</span>
+                  <span class="pill">${escapeHtml(appState.scenario.settings.ai_provider)} / ${escapeHtml(appState.scenario.settings.ai_model)}</span>
+                </div>
+              </section>
+              ${renderCurrentView()}
+            </main>
+          </div>
+        `;
+      }
+
+      function renderNavButton(route, label, note) {
+        return `<button class="nav-button ${appState.route === route ? 'active' : ''}" data-route="${route}"><span>${label}</span><small>${note}</small></button>`;
+      }
+
+      function viewConfig() {
+        const map = {
+          settings: { title: 'Paramètres IA', subtitle: 'Configurez votre fournisseur AI, la clé API et les préférences de génération.' },
+          scenario: { title: 'Scénario de crise', subtitle: 'Définissez le client, le contexte et les acteurs impliqués dans l’exercice.' },
+          stimuli: { title: 'Timeline & éditeur', subtitle: 'Créez des stimuli réalistes, générez leur contenu et ajustez le rendu en temps réel.' },
+          preview: { title: 'Prévisualisation plein écran', subtitle: 'Affichez, exportez et faites défiler les stimuli dans l’ordre de la timeline.' }
+        };
+        return map[appState.route];
+      }
+
+      function renderCurrentView() {
+        if (appState.route === 'settings') return renderSettingsView();
+        if (appState.route === 'scenario') return renderScenarioView();
+        if (appState.route === 'stimuli') return renderStimuliView();
+        return renderPreviewView();
+      }
+
+      function renderSettingsView() {
+        const settings = appState.scenario.settings;
+        const models = DEFAULT_MODELS[settings.ai_provider] || [];
+        return `
+          <section class="grid cols-2">
+            <article class="card">
+              <div class="section-header"><h3>Connexion AI</h3></div>
+              <div class="field-grid cols-2">
+                <label class="field">Fournisseur AI
+                  <select data-bind="settings.ai_provider">
+                    <option value="openai" ${settings.ai_provider === 'openai' ? 'selected' : ''}>OpenAI</option>
+                    <option value="anthropic" ${settings.ai_provider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
+                  </select>
+                </label>
+                <label class="field">Modèle
+                  <select data-bind="settings.ai_model">
+                    ${models.map((model) => `<option value="${model}" ${settings.ai_model === model ? 'selected' : ''}>${model}</option>`).join('')}
+                  </select>
+                </label>
+                <label class="field" style="grid-column: 1 / -1;">Clé API
+                  <div style="display:flex; gap:10px;">
+                    <input id="api-key-input" type="password" data-bind="settings.ai_api_key" value="${escapeAttribute(settings.ai_api_key)}" placeholder="sk-...">
+                    <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
+                  </div>
+                </label>
+                <label class="field">Langue par défaut
+                  <select data-bind="settings.language">
+                    ${['fr', 'en', 'de', 'es', 'it'].map((lang) => `<option value="${lang}" ${settings.language === lang ? 'selected' : ''}>${lang.toUpperCase()}</option>`).join('')}
+                  </select>
+                </label>
+              </div>
+              <div class="actions" style="margin-top:18px;">
+                <button class="btn btn-primary" data-action="test-connection">Tester la connexion</button>
+                <button class="btn btn-secondary" data-action="save-local">Sauvegarder localement</button>
+              </div>
+              <p class="helper" style="margin-top:14px;">Votre clé API est stockée localement dans votre navigateur et n’est jamais transmise ailleurs qu’à l’API du fournisseur choisi.</p>
+            </article>
+            <article class="card">
+              <div class="section-header"><h3>Modules implémentés</h3></div>
+              <div class="tag-row">
+                <span class="tag">ScenarioManager</span>
+                <span class="tag">StimulusEditor</span>
+                <span class="tag">TemplateEngine</span>
+                <span class="tag">AITextGenerator</span>
+                <span class="tag">ExportEngine</span>
+                <span class="tag">UIRouter</span>
+              </div>
+              <p class="subtle" style="margin-top:18px;">L’application fonctionne sans serveur et tient dans un seul fichier HTML. Les dépendances externes sont chargées via CDN pour l’export PNG et ZIP.</p>
+              <div class="field-grid" style="margin-top:20px;">
+                <div class="card" style="padding:16px; background:var(--surface-alt); box-shadow:none;">
+                  <h4>Conseils de génération</h4>
+                  <ul class="helper">
+                    <li>Utilisez un résumé de scénario précis pour obtenir des stimuli cohérents.</li>
+                    <li>Renseignez plusieurs acteurs pour varier les points de vue.</li>
+                    <li>L’édition manuelle reste possible après génération sur chaque champ.</li>
+                  </ul>
+                </div>
+                <div class="card" style="padding:16px; background:var(--surface-alt); box-shadow:none;">
+                  <h4>Validation rapide</h4>
+                  <ul class="helper">
+                    <li>Export PNG en haute résolution (pixelRatio 2).</li>
+                    <li>Auto-sauvegarde toutes les 30 secondes.</li>
+                    <li>Import / export complet du scénario en JSON.</li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+          </section>
+        `;
+      }
+
+      function renderScenarioView() {
+        const scenario = appState.scenario;
+        return `
+          <section class="grid">
+            <article class="card">
+              <div class="section-header"><h3>Client</h3></div>
+              <div class="field-grid cols-2">
+                <label class="field">Nom du client<input type="text" data-bind="client.name" value="${escapeAttribute(scenario.client.name)}"></label>
+                <label class="field">Secteur
+                  <select data-bind="client.sector">${['Banque', 'Énergie', 'Santé', 'Transport', 'Industrie', 'Telecom', 'Retail', 'Public', 'Autre'].map((item) => `<option value="${item}" ${scenario.client.sector === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
+                </label>
+                <label class="field">Pays
+                  <select data-bind="client.country">${COUNTRIES.map((country) => `<option value="${country}" ${scenario.client.country === country ? 'selected' : ''}>${country}</option>`).join('')}</select>
+                </label>
+                <label class="field">Logo (URL ou data URI)<input type="url" data-bind="client.logo_url" value="${escapeAttribute(scenario.client.logo_url)}" placeholder="https://..."></label>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="section-header"><h3>Scénario</h3></div>
+              <div class="field-grid cols-2">
+                <label class="field">Nom du scénario<input type="text" data-bind="name" value="${escapeAttribute(scenario.name)}"></label>
+                <label class="field">Type
+                  <select data-bind="scenario.type">${['Ransomware', 'Data Breach', 'Supply Chain', 'DDoS', 'Insider Threat', 'Autre'].map((item) => `<option value="${item}" ${scenario.scenario.type === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
+                </label>
+                <label class="field">Date de début<input type="datetime-local" data-bind="scenario.start_date" value="${escapeAttribute(scenario.scenario.start_date)}"></label>
+                <label class="field">Fuseau horaire
+                  <select data-bind="scenario.timezone">${TIMEZONES.map((item) => `<option value="${item}" ${scenario.scenario.timezone === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
+                </label>
+                <label class="field" style="grid-column: 1 / -1;">Résumé du scénario<textarea data-bind="scenario.summary">${escapeHtml(scenario.scenario.summary)}</textarea></label>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="section-header">
+                <div>
+                  <h3>Acteurs simulés</h3>
+                  <p class="subtle">Acteurs disponibles pour signer ou émettre les stimuli.</p>
+                </div>
+                <div class="actions">
+                  <button class="btn btn-secondary" data-action="generate-sample-actors">Générer des acteurs types</button>
+                  <button class="btn btn-primary" data-action="add-actor">Ajouter un acteur</button>
+                </div>
+              </div>
+              <table class="table">
+                <thead><tr><th>Nom</th><th>Rôle</th><th>Organisation</th><th>Titre</th><th>Pays</th><th>Actions</th></tr></thead>
+                <tbody>
+                  ${scenario.actors.map((actor) => `
+                    <tr>
+                      <td><input type="text" data-actor-bind="${actor.id}.name" value="${escapeAttribute(actor.name)}"></td>
+                      <td>
+                        <select data-actor-bind="${actor.id}.role">
+                          ${ROLES.map((role) => `<option value="${role.value}" ${actor.role === role.value ? 'selected' : ''}>${role.label}</option>`).join('')}
+                        </select>
+                      </td>
+                      <td><input type="text" data-actor-bind="${actor.id}.organization" value="${escapeAttribute(actor.organization)}"></td>
+                      <td><input type="text" data-actor-bind="${actor.id}.title" value="${escapeAttribute(actor.title)}"></td>
+                      <td>
+                        <select data-actor-bind="${actor.id}.country">
+                          ${COUNTRIES.map((country) => `<option value="${country}" ${actor.country === country ? 'selected' : ''}>${country}</option>`).join('')}
+                        </select>
+                      </td>
+                      <td>
+                        <div class="actions">
+                          <button class="btn btn-ghost" data-action="duplicate-actor" data-actor-id="${actor.id}">Dupliquer</button>
+                          <button class="btn btn-danger" data-action="delete-actor" data-actor-id="${actor.id}">Supprimer</button>
+                        </div>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </article>
+          </section>
+        `;
+      }
+
+      function renderStimuliView() {
+        const selected = getSelectedStimulus();
+        const maxOffset = Math.max(360, ...appState.scenario.stimuli.map((item) => item.timestamp_offset_minutes));
+        const width = Math.max(980, (Math.ceil(maxOffset / 60) + 1) * 120 + 120);
+        const ticks = Array.from({ length: Math.ceil(maxOffset / 60) + 2 }, (_, index) => index);
+        return `
+          <section class="grid">
+            <article class="card">
+              <div class="section-header">
+                <div>
+                  <h3>Timeline visuelle</h3>
+                  <p class="subtle">Axe horizontal en temps relatif, cartes colorées par canal, triées chronologiquement.</p>
+                </div>
+                <div class="actions">
+                  <button class="btn btn-primary" data-action="add-stimulus">+ Ajouter un stimulus</button>
+                  <button class="btn btn-secondary" data-action="sort-stimuli">Trier la timeline</button>
+                </div>
+              </div>
+              <div class="timeline">
+                <div class="timeline-track" style="width:${width}px;">
+                  ${ticks.map((tick) => `<div class="timeline-tick" style="left:${tick * 120}px;">H+${tick}</div>`).join('')}
+                  ${appState.scenario.stimuli.map((stimulus, index) => renderStimulusCard(stimulus, index)).join('')}
+                </div>
+              </div>
+            </article>
+            <section class="editor-layout">
+              <article class="card">
+                ${selected ? renderStimulusEditor(selected) : '<p class="subtle">Sélectionnez un stimulus pour l’éditer.</p>'}
+              </article>
+              <article class="preview-shell">
+                <div class="preview-stage">
+                  ${selected ? renderStimulusPreview(selected) : '<div class="subtle">La prévisualisation apparaîtra ici.</div>'}
+                </div>
+              </article>
+            </section>
+          </section>
+        `;
+      }
+
+      function renderStimulusCard(stimulus, index) {
+        const meta = CHANNEL_META[stimulus.channel] || CHANNEL_META.email_internal;
+        const left = (stimulus.timestamp_offset_minutes / 60) * 120;
+        const top = 24 + (index % 3) * 58;
+        const actor = getActor(stimulus.actor_id);
+        return `
+          <div class="stimulus-card ${appState.selectedStimulusId === stimulus.id ? 'selected' : ''}" data-action="select-stimulus" data-stimulus-id="${stimulus.id}" style="left:${left}px; top:${top}px; background:${meta.color};">
+            <strong>${escapeHtml(meta.label)}</strong>
+            <small>${escapeHtml(actor?.name || 'Sans acteur')}</small>
+            <small>H+${Math.floor(stimulus.timestamp_offset_minutes / 60)}:${String(stimulus.timestamp_offset_minutes % 60).padStart(2, '0')}</small>
+            <small>Statut : ${escapeHtml(stimulus.status)}</small>
+          </div>
+        `;
+      }
+
+      function renderStimulusEditor(stimulus) {
+        const library = TEMPLATE_LIBRARY[stimulus.channel] || TEMPLATE_LIBRARY.email_internal;
+        const actorOptions = appState.scenario.actors.map((actor) => `<option value="${actor.id}" ${stimulus.actor_id === actor.id ? 'selected' : ''}>${escapeHtml(actor.name)} — ${escapeHtml(actor.title)}</option>`).join('');
+        return `
+          <div class="section-header">
+            <div>
+              <h3>Éditeur de stimulus</h3>
+              <p class="subtle">${escapeHtml(CHANNEL_META[stimulus.channel].label)} · template <span class="mono">${escapeHtml(stimulus.template_id)}</span></p>
+            </div>
+            <div class="actions">
+              <button class="btn btn-secondary" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}">Dupliquer</button>
+              <button class="btn btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}">Supprimer</button>
+            </div>
+          </div>
+
+          <div class="field-grid cols-2">
+            <label class="field">Canal
+              <select data-stimulus-bind="${stimulus.id}.channel">${Object.entries(CHANNEL_META).map(([channel, meta]) => `<option value="${channel}" ${stimulus.channel === channel ? 'selected' : ''}>${meta.label}</option>`).join('')}</select>
+            </label>
+            <label class="field">Acteur émetteur
+              <select data-stimulus-bind="${stimulus.id}.actor_id">${actorOptions}</select>
+            </label>
+            <label class="field">Timeline (minutes)
+              <input type="number" min="0" step="5" data-stimulus-bind="${stimulus.id}.timestamp_offset_minutes" value="${stimulus.timestamp_offset_minutes}">
+            </label>
+            <label class="field">Statut
+              <select data-stimulus-bind="${stimulus.id}.status">${['draft', 'ready', 'sent'].map((value) => `<option value="${value}" ${stimulus.status === value ? 'selected' : ''}>${value}</option>`).join('')}</select>
+            </label>
+          </div>
+
+          <div class="actions" style="margin:18px 0 16px;">
+            <button class="btn btn-primary" data-action="generate-stimulus" data-stimulus-id="${stimulus.id}">Tout générer</button>
+            <button class="btn btn-success" data-action="export-png" data-stimulus-id="${stimulus.id}">Exporter PNG</button>
+          </div>
+
+          <div class="field-grid">
+            ${library.fields.map((spec) => renderFieldControl(stimulus, spec)).join('')}
+          </div>
+        `;
+      }
+
+      function renderFieldControl(stimulus, spec) {
+        const value = stimulus.fields[spec.key];
+        const bind = `data-stimulus-field="${stimulus.id}.${spec.key}"`;
+        if (spec.type === 'textarea') {
+          const content = Array.isArray(value) ? JSON.stringify(value) : String(value ?? '');
+          return `
+            <label class="field">${escapeHtml(spec.label)}
+              <textarea ${bind}>${escapeHtml(content)}</textarea>
+              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+            </label>
+          `;
+        }
+        if (spec.type === 'select') {
+          return `
+            <label class="field">${escapeHtml(spec.label)}
+              <select ${bind}>
+                ${(spec.options || []).map((option) => `<option value="${option}" ${String(value) === String(option) ? 'selected' : ''}>${option}</option>`).join('')}
+              </select>
+              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+            </label>
+          `;
+        }
+        if (spec.type === 'checkbox') {
+          return `
+            <label class="field">${escapeHtml(spec.label)}
+              <select ${bind}><option value="true" ${value ? 'selected' : ''}>Oui</option><option value="false" ${!value ? 'selected' : ''}>Non</option></select>
+            </label>
+          `;
+        }
+        return `
+          <label class="field">${escapeHtml(spec.label)}
+            <input type="${spec.type}" ${bind} value="${escapeAttribute(value ?? '')}">
+            <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+          </label>
+        `;
+      }
+
+      function renderPreviewView() {
+        const stimuli = getSortedStimuli();
+        if (!stimuli.length) {
+          return '<article class="card"><p class="subtle">Aucun stimulus à prévisualiser.</p></article>';
+        }
+        const index = Math.min(appState.slideshowIndex, stimuli.length - 1);
+        const current = stimuli[index];
+        const meta = CHANNEL_META[current.channel];
+        return `
+          <section class="grid">
+            <article class="preview-toolbar">
+              <div>
+                <strong>${escapeHtml(meta.label)}</strong>
+                <div class="subtle">${escapeHtml(getActor(current.actor_id)?.name || 'Sans acteur')} · H+${Math.floor(current.timestamp_offset_minutes / 60)}:${String(current.timestamp_offset_minutes % 60).padStart(2, '0')}</div>
+              </div>
+              <div class="actions">
+                <button class="btn btn-secondary" data-action="preview-prev">← Précédent</button>
+                <button class="btn btn-secondary" data-action="preview-next">Suivant →</button>
+                <button class="btn btn-primary" data-action="goto-stimuli" data-stimulus-id="${current.id}">Éditer</button>
+                <button class="btn btn-success" data-action="export-png" data-stimulus-id="${current.id}">Exporter PNG</button>
+              </div>
+            </article>
+            <article class="preview-shell">
+              <div class="preview-stage">${renderStimulusPreview(current, 'fullscreen-preview')}</div>
+            </article>
+            <article class="card">
+              <div class="section-header"><h3>Diaporama de stimuli</h3></div>
+              <div class="thumb-grid">
+                ${stimuli.map((stimulus, idx) => `
+                  <div class="thumb-card">
+                    <div class="thumb-preview">${renderStimulusPreview(stimulus, '', true)}</div>
+                    <div class="thumb-body">
+                      <strong>${escapeHtml(CHANNEL_META[stimulus.channel].label)}</strong>
+                      <p class="subtle">${escapeHtml(getActor(stimulus.actor_id)?.name || 'Sans acteur')} · H+${Math.floor(stimulus.timestamp_offset_minutes / 60)}:${String(stimulus.timestamp_offset_minutes % 60).padStart(2, '0')}</p>
+                      <button class="btn btn-secondary" data-action="preview-select" data-index="${idx}">Afficher</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </article>
+          </section>
+        `;
+      }
+
+      function renderStimulusPreview(stimulus, id = '', thumbnail = false) {
+        const wrapperId = id || `render-${stimulus.id}`;
+        const body = TemplateEngine.render(stimulus, getActor(stimulus.actor_id), appState.scenario);
+        return `<div id="${wrapperId}" class="render-frame" style="transform:${thumbnail ? 'scale(0.22)' : 'none'}; transform-origin: top center;">${body}</div>`;
+      }
+
+      const TemplateEngine = {
+        render(stimulus, actor, scenario) {
+          const f = stimulus.fields || {};
+          switch (stimulus.channel) {
+            case 'email_internal': return this.emailInternal(f);
+            case 'article_press': return this.articleLeMonde(f);
+            case 'post_twitter': return this.twitter(f);
+            case 'post_linkedin': return this.linkedin(f);
+            case 'breaking_news_tv': return this.bfm(f);
+            case 'email_authority': return this.authority(f);
+            case 'press_release': return this.pressRelease(f);
+            case 'sms_notification': return this.sms(f);
+            default: return `<div class="card">Template non implémenté pour ${escapeHtml(stimulus.channel)}.</div>`;
+          }
+        },
+        emailInternal(f) {
+          return `
+            <div class="outlook-email">
+              <div class="outlook-topbar">
+                <strong>Outlook</strong>
+                <div class="outlook-actions">${iconReply()} Répondre ${iconReplyAll()} Répondre à tous ${iconForward()} Transférer</div>
+              </div>
+              <div class="outlook-body">
+                <div class="outlook-meta">
+                  <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">${f.importance === 'high' ? '<span class="importance-dot">!</span>' : ''}<div class="outlook-subject">${escapeHtml(f.subject || '')}</div></div>
+                  <div class="outlook-row"><span>De</span><strong>${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;</strong></div>
+                  <div class="outlook-row"><span>À</span><span>${escapeHtml(f.to || '')}</span></div>
+                  <div class="outlook-row"><span>Cc</span><span>${escapeHtml(f.cc || '')}</span></div>
+                  <div class="outlook-row"><span>Date</span><span>${escapeHtml(f.date || '')}</span></div>
+                </div>
+                <div class="outlook-content">
+                  ${f.body || ''}
+                  ${f.has_attachment ? `<div class="outlook-attachment">📎 <span>${escapeHtml(f.attachment_name || 'piece_jointe.pdf')}</span></div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        },
+        articleLeMonde(f) {
+          return `
+            <article class="press-article">
+              <div class="lm-header">
+                <div class="lm-logo">Le Monde</div>
+                <div class="lm-nav"><span>Politique</span><span>International</span><span>Économie</span><span>Pixels</span><span>Culture</span><span>Opinions</span></div>
+              </div>
+              ${f.is_premium ? '<div class="lm-premium">Réservé aux abonnés — lecture intégrale</div>' : ''}
+              <div class="press-body">
+                <div class="press-category">${escapeHtml(f.category || '')}</div>
+                <h1 class="press-headline">${escapeHtml(f.headline || '')}</h1>
+                <div class="press-subheadline">${escapeHtml(f.subheadline || '')}</div>
+                <div class="press-byline"><span>${escapeHtml(f.author || '')}</span><span>${escapeHtml(f.date || '')} · ${escapeHtml(f.read_time || '')}</span></div>
+                <div class="press-photo"></div>
+                <div class="press-caption">${escapeHtml(f.image_caption || '')}</div>
+                <div class="press-content">${f.body || ''}</div>
+              </div>
+            </article>
+          `;
+        },
+        twitter(f) {
+          return `
+            <article class="tweet">
+              <div class="tweet-header">
+                <div class="avatar" style="background:${escapeAttribute(f.avatar_color || '#1da1f2')};">${escapeHtml(f.avatar_initials || 'AA')}</div>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; gap:8px; align-items:flex-start;">
+                    <div>
+                      <div class="tweet-name">${escapeHtml(f.display_name || '')} ${f.verified ? verifiedBadge(f.verified_type) : ''}</div>
+                      <div class="tweet-handle">${escapeHtml(f.handle || '')}</div>
+                    </div>
+                    <div class="tweet-meta">···</div>
+                  </div>
+                  <div class="tweet-text">${escapeHtml(f.text || '')}</div>
+                  <div class="tweet-meta">${escapeHtml(f.date || '')}</div>
+                  <div class="tweet-divider"></div>
+                  <div class="tweet-metrics">
+                    <span><strong>${formatMetric(f.replies)}</strong> Replies</span>
+                    <span><strong>${formatMetric(f.retweets)}</strong> Reposts</span>
+                    <span><strong>${formatMetric(f.quotes)}</strong> Quotes</span>
+                    <span><strong>${formatMetric(f.likes)}</strong> Likes</span>
+                    <span><strong>${formatMetric(f.views)}</strong> Views</span>
+                  </div>
+                  <div class="tweet-divider"></div>
+                  <div class="tweet-actions"><span>${iconReply()}</span><span>${iconRetweet()}</span><span>${iconLike()}</span><span>${iconViews()}</span><span>${iconShare()}</span></div>
+                </div>
+              </div>
+            </article>
+          `;
+        },
+        linkedin(f) {
+          const reactions = parseArrayField(f.reaction_types).join(' ');
+          const trimmed = String(f.text || '');
+          const showMore = trimmed.split(/\n/).length > 3 || trimmed.length > 280;
+          return `
+            <article class="linkedin-card">
+              <div class="li-header">
+                <div class="avatar" style="background:${escapeAttribute(f.avatar_color || '#0A66C2')}; width:52px; height:52px;">${escapeHtml(f.avatar_initials || 'AA')}</div>
+                <div class="li-meta">
+                  <div class="li-name">${escapeHtml(f.display_name || '')}</div>
+                  <div class="li-title">${escapeHtml(f.title || '')}</div>
+                  <div class="li-date">${escapeHtml(f.date || '')} · 🌐</div>
+                </div>
+              </div>
+              <div class="li-text">${escapeHtml(trimmed)}${showMore ? '<div class="li-see-more">…voir plus</div>' : ''}</div>
+              <div class="li-stats"><span>${reactions}</span><span>${formatMetric(f.reactions_count)} réactions · ${formatMetric(f.comments_count)} commentaires · ${formatMetric(f.reposts_count)} republications</span></div>
+              <div class="li-divider"></div>
+              <div class="li-actions"><strong>J’aime</strong><strong>Commenter</strong><strong>Republier</strong><strong>Envoyer</strong></div>
+            </article>
+          `;
+        },
+        bfm(f) {
+          return `
+            <article class="bfm-banner">
+              <div class="bfm-live">
+                <div class="bfm-logo">BFM<br>TV</div>
+                <div class="bfm-category">${escapeHtml(f.category || 'ALERTE INFO')}</div>
+              </div>
+              <div class="bfm-main">
+                <div class="bfm-headline">${escapeHtml(f.headline || '')}</div>
+                <div class="bfm-subline">${escapeHtml(f.subline || '')}</div>
+              </div>
+              <div class="bfm-footer">
+                <div class="bfm-time">${escapeHtml(f.time || '')}</div>
+                <div class="bfm-ticker-wrap"><div class="bfm-ticker">${escapeHtml(f.ticker || '')}</div></div>
+                <div class="bfm-channel">DIRECT</div>
+              </div>
+            </article>
+          `;
+        },
+        authority(f) {
+          const colors = { critical: '#b91c1c', high: '#d97706', medium: '#ca8a04' };
+          const color = colors[f.severity] || colors.high;
+          return `
+            <article class="authority-email">
+              <div class="authority-strip" style="background:${color};"></div>
+              <div class="authority-body">
+                <div class="authority-header">
+                  <div class="authority-brand">
+                    <div class="rf-logo"></div>
+                    <div>
+                      <strong>ANSSI · CERT-FR</strong><br>
+                      <span class="subtle">Alerte officielle cybersécurité</span>
+                    </div>
+                  </div>
+                  <div class="mono">${escapeHtml(f.reference || '')}</div>
+                </div>
+                <div class="authority-content">
+                  <div class="authority-banner"><strong>Sévérité : ${escapeHtml(f.severity || '')}</strong> · Diffusion restreinte au destinataire</div>
+                  <p><strong>De :</strong> ${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;<br><strong>À :</strong> ${escapeHtml(f.to || '')}<br><strong>Date :</strong> ${escapeHtml(f.date || '')}</p>
+                  <h2 style="margin-top:0;">${escapeHtml(f.subject || '')}</h2>
+                  <div>${f.body || ''}</div>
+                </div>
+              </div>
+            </article>
+          `;
+        },
+        pressRelease(f) {
+          return `
+            <article class="press-release">
+              <div class="pr-logo" style="color:${escapeAttribute(f.logo_color || '#003366')};">${escapeHtml(f.logo_text || '')}</div>
+              <div class="pr-meta">${escapeHtml(f.date || '')}</div>
+              <div class="pr-title">${escapeHtml(f.title || '')}</div>
+              <div class="pr-body">${f.body || ''}</div>
+              <div class="pr-contact">
+                <strong>Contact presse</strong><br>
+                ${escapeHtml(f.contact_name || '')}<br>
+                ${escapeHtml(f.contact_email || '')}<br>
+                ${escapeHtml(f.contact_phone || '')}
+              </div>
+            </article>
+          `;
+        },
+        sms(f) {
+          return `
+            <article class="sms-shell ${f.device === 'android' ? 'sms-android' : ''}">
+              <div class="sms-screen">
+                <div class="sms-top">${escapeHtml(f.sender || '')}</div>
+                <div style="display:flex; justify-content:flex-start;">
+                  <div>
+                    <div class="sms-bubble">${escapeHtml(f.text || '')}</div>
+                    <div class="sms-time">Aujourd’hui ${escapeHtml(f.time || '')}</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        }
+      };
+
+      const AITextGenerator = {
+        async testConnection() {
+          if (!appState.scenario.settings.ai_api_key) throw new Error('Veuillez saisir une clé API avant de tester la connexion.');
+          const prompt = 'Réponds uniquement avec un objet JSON {"ok": true, "message": "connexion valide"}';
+          return this.generate('settings_test', prompt, null, true);
+        },
+        async generateForStimulus(stimulus, fieldName = null) {
+          const actor = getActor(stimulus.actor_id);
+          const promptInfo = PromptBuilder.forStimulus(stimulus, actor, appState.scenario, fieldName);
+          return this.generate(stimulus.channel, promptInfo.systemPrompt, promptInfo.userPrompt);
+        },
+        async generate(channel, systemPrompt, userPrompt = null, quiet = false) {
+          const { ai_provider, ai_api_key, ai_model } = appState.scenario.settings;
+          if (!ai_api_key) throw new Error('Clé API manquante.');
+          if (ai_provider === 'openai') {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ai_api_key}` },
+              body: JSON.stringify({ model: ai_model, temperature: 0.8, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, ...(userPrompt ? [{ role: 'user', content: userPrompt }] : [])] })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.message || 'Erreur API OpenAI');
+            const parsed = JSON.parse(data.choices[0].message.content);
+            if (!quiet) pushToast('Contenu généré avec OpenAI.', 'success');
+            return parsed;
+          }
+          if (ai_provider === 'anthropic') {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-api-key': ai_api_key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+              body: JSON.stringify({ model: ai_model, max_tokens: 2000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt || 'Réponds en JSON strict.' }] })
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.message || 'Erreur API Anthropic');
+            const text = data.content?.[0]?.text || '{}';
+            const match = text.match(/\{[\s\S]*\}/);
+            if (!match) throw new Error('Réponse Anthropic non JSON.');
+            const parsed = JSON.parse(match[0]);
+            if (!quiet) pushToast('Contenu généré avec Anthropic.', 'success');
+            return parsed;
+          }
+          throw new Error(`Fournisseur non supporté : ${ai_provider}`);
+        }
+      };
+
+      const PromptBuilder = {
+        forStimulus(stimulus, actor, scenario, fieldName = null) {
+          const common = {
+            scenarioSummary: scenario.scenario.summary,
+            timestamp: `H+${stimulus.timestamp_offset_minutes} minutes`,
+            actorName: actor?.name || 'Porte-parole',
+            actorTitle: actor?.title || 'Responsable',
+            actorRole: actor?.role || 'internal',
+            language: scenario.settings.language || 'fr'
+          };
+          const eventDescription = stimulus.fields.subject || stimulus.fields.headline || stimulus.fields.text || stimulus.fields.title || 'Nouveau développement dans la crise cyber';
+          switch (stimulus.channel) {
+            case 'article_press':
+              return {
+                systemPrompt: `Tu es un journaliste spécialisé en cybersécurité pour Le Monde (FR). Tu rédiges un article factuel sur un incident de sécurité informatique. Contexte du scénario : ${common.scenarioSummary}. Événement à couvrir : ${eventDescription}. Moment dans la timeline : ${common.timestamp}. Consignes : titre accrocheur mais factuel, chapô de 2 phrases, corps de 3-4 paragraphes HTML avec <p>, citation fictive, langue ${common.language}, ne jamais mentionner qu'il s'agit d'un exercice. Réponds uniquement avec un objet JSON contenant headline, subheadline, body, image_caption.`,
+                userPrompt: fieldName ? `Génère uniquement la meilleure valeur pour le champ ${fieldName}, mais réponds quand même en JSON avec toutes les clés attendues.` : 'Rédige l’article complet.'
+              };
+            case 'post_twitter':
+              return {
+                systemPrompt: `Tu es ${common.actorName}, ${common.actorTitle}. Tu réagis sur X/Twitter à un événement de cybersécurité. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Ton personnage : ${common.actorRole}. Consignes : maximum 280 caractères, style authentique, peut inclure 1-2 hashtags, langue ${common.language}. Réponds uniquement avec un objet JSON {"text":"..."}.`,
+                userPrompt: fieldName ? `Optimise le champ ${fieldName}.` : 'Génère un tweet crédible.'
+              };
+            case 'post_linkedin':
+              return {
+                systemPrompt: `Tu es ${common.actorName}, ${common.actorTitle}. Tu publies sur LinkedIn à propos d'un événement de cybersécurité. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Consignes : 500-1000 caractères, ton professionnel mais engagé, structure accroche + analyse + perspective, hashtags sobres, langue ${common.language}. Réponds uniquement avec JSON {"text":"..."}.`,
+                userPrompt: 'Rédige le post LinkedIn.'
+              };
+            case 'email_internal':
+              return {
+                systemPrompt: `Tu rédiges un email interne dans le contexte d'une crise cyber. Expéditeur : ${stimulus.fields.from_name || common.actorName}. Destinataire : ${stimulus.fields.to || 'Comité de crise'}. Contexte : ${common.scenarioSummary}. Objectif du mail : point de situation et consignes. Moment : ${common.timestamp}. Consignes : objet clair, corps structuré avec HTML <p>, <ul>, <strong>, langue ${common.language}. Réponds uniquement avec JSON {"subject":"...","body":"..."}.`,
+                userPrompt: 'Rédige un email structuré et crédible.'
+              };
+            case 'email_authority':
+              return {
+                systemPrompt: `Tu rédiges une alerte officielle du CERT-FR (FR). Contexte : ${common.scenarioSummary}. Type d'alerte : vulnérabilité critique exploitée. Sévérité : ${stimulus.fields.severity || 'high'}. Consignes : ton institutionnel, précis, technique, structure résumé / systèmes affectés / recommandations / indicateurs de compromission, langue ${common.language}. Réponds uniquement avec JSON {"reference":"...","subject":"...","body":"..."}.`,
+                userPrompt: 'Rédige une alerte officielle.'
+              };
+            case 'press_release':
+              return {
+                systemPrompt: `Tu rédiges un communiqué de presse officiel pour ${stimulus.fields.organization || scenario.client.name}. Contexte : ${common.scenarioSummary}. Moment : ${common.timestamp}. Position : première réaction. Consignes : ton corporate, rassurant mais transparent, structure date/lieu, titre, contexte, mesures, engagement, contact presse, langue ${common.language}. Réponds uniquement avec JSON {"title":"...","body":"..."}.`,
+                userPrompt: 'Rédige le communiqué.'
+              };
+            default:
+              return {
+                systemPrompt: `Tu aides à créer un stimulus cyber réaliste. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Réponds uniquement avec un objet JSON cohérent avec le canal ${stimulus.channel}.`,
+                userPrompt: fieldName ? `Génère une valeur crédible pour ${fieldName}.` : 'Génère le contenu complet.'
+              };
+          }
+        }
+      };
+
+      const ExportEngine = {
+        async exportStimulus(stimulus) {
+          const element = document.getElementById(`render-${stimulus.id}`) || document.getElementById('fullscreen-preview');
+          if (!element) throw new Error('Aucun rendu disponible à exporter.');
+          const dataUrl = await htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
+          this.downloadDataUrl(dataUrl, this.filenameForStimulus(stimulus));
+          pushToast('Stimulus exporté en PNG.', 'success');
+        },
+        async exportAll() {
+          const zip = new JSZip();
+          const stimuli = getSortedStimuli();
+          if (!stimuli.length) throw new Error('Aucun stimulus à exporter.');
+          const sandbox = document.createElement('div');
+          sandbox.style.position = 'fixed';
+          sandbox.style.left = '-99999px';
+          sandbox.style.top = '0';
+          document.body.appendChild(sandbox);
+          for (const stimulus of stimuli) {
+            sandbox.innerHTML = renderStimulusPreview(stimulus, `zip-${stimulus.id}`);
+            const node = sandbox.firstElementChild;
+            const dataUrl = await htmlToImage.toPng(node, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
+            zip.file(this.filenameForStimulus(stimulus), dataUrl.split(',')[1], { base64: true });
+          }
+          document.body.removeChild(sandbox);
+          const blob = await zip.generateAsync({ type: 'blob' });
+          downloadBlob(blob, `crisisstim_${slugify(appState.scenario.name)}_exports.zip`);
+          pushToast('Archive ZIP générée.', 'success');
+        },
+        filenameForStimulus(stimulus) {
+          const actor = getActor(stimulus.actor_id);
+          return `${slugify(appState.scenario.name)}_H+${String(Math.floor(stimulus.timestamp_offset_minutes / 60)).padStart(2, '0')}_${stimulus.channel}_${slugify(actor?.name || 'acteur')}.png`;
+        },
+        downloadDataUrl(dataUrl, filename) {
+          const link = document.createElement('a');
+          link.href = dataUrl;
+          link.download = filename;
+          link.click();
+        }
+      };
+
+      function bindGlobalEvents() {
+        document.querySelectorAll('[data-route]').forEach((button) => {
+          button.addEventListener('click', () => {
+            appState.route = button.dataset.route;
+            App.render();
+          });
+        });
+
+        document.querySelectorAll('[data-bind]').forEach((input) => {
+          input.addEventListener('change', () => {
+            setByPath(appState.scenario, input.dataset.bind, input.value);
+            if (input.dataset.bind === 'settings.ai_provider') {
+              const models = DEFAULT_MODELS[input.value];
+              appState.scenario.settings.ai_model = models[0];
+            }
+            App.render();
+          });
+        });
+
+        document.querySelectorAll('[data-actor-bind]').forEach((input) => {
+          input.addEventListener('change', () => {
+            const [actorId, ...pathParts] = input.dataset.actorBind.split('.');
+            const actor = getActor(actorId);
+            if (!actor) return;
+            actor[pathParts.join('.')] = input.value;
+            if (pathParts.join('.') === 'name') actor.avatar_initials = initialsFromName(input.value);
+            App.render();
+          });
+        });
+
+        document.querySelectorAll('[data-stimulus-bind]').forEach((input) => {
+          input.addEventListener('change', () => {
+            const [stimulusId, property] = input.dataset.stimulusBind.split('.');
+            const stimulus = getStimulus(stimulusId);
+            if (!stimulus) return;
+            if (property === 'timestamp_offset_minutes') stimulus.timestamp_offset_minutes = Number(input.value);
+            else if (property === 'channel') replaceStimulusTemplate(stimulus, input.value);
+            else stimulus[property] = input.value;
+            App.render();
+          });
+        });
+
+        document.querySelectorAll('[data-stimulus-field]').forEach((input) => {
+          const eventName = input.tagName === 'TEXTAREA' || input.type === 'text' ? 'input' : 'change';
+          input.addEventListener(eventName, () => {
+            const [stimulusId, fieldName] = input.dataset.stimulusField.split('.');
+            const stimulus = getStimulus(stimulusId);
+            if (!stimulus) return;
+            let value = input.value;
+            if (input.tagName === 'TEXTAREA' && fieldName === 'reaction_types') {
+              try { value = JSON.parse(value); } catch { value = value.split(',').map((item) => item.trim()).filter(Boolean); }
+            }
+            if (String(value) === 'true') value = true;
+            if (String(value) === 'false') value = false;
+            if (input.type === 'number') value = Number(value);
+            stimulus.fields[fieldName] = value;
+            stimulus.manual_overrides[fieldName] = value;
+            const previewHost = document.querySelector('.preview-stage');
+            if (previewHost) previewHost.innerHTML = renderStimulusPreview(stimulus);
+          });
+        });
+
+        document.querySelectorAll('[data-action]').forEach((button) => {
+          button.addEventListener('click', handleAction);
+        });
+      }
+
+      async function handleAction(event) {
+        const action = event.currentTarget.dataset.action;
+        try {
+          switch (action) {
+            case 'toggle-api-key': {
+              const input = document.getElementById('api-key-input');
+              input.type = input.type === 'password' ? 'text' : 'password';
+              break;
+            }
+            case 'save-local': saveLocal(); break;
+            case 'new-scenario': {
+              appState.scenario = defaultScenario();
+              appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
+              App.render();
+              pushToast('Nouveau scénario initialisé.', 'success');
+              break;
+            }
+            case 'save-json': saveScenarioToFile(); break;
+            case 'load-json': loadScenarioFromFile(); break;
+            case 'export-all': await ExportEngine.exportAll(); break;
+            case 'test-connection': {
+              await AITextGenerator.testConnection();
+              pushToast('Connexion AI validée.', 'success');
+              break;
+            }
+            case 'add-actor': addActor(); break;
+            case 'duplicate-actor': duplicateActor(event.currentTarget.dataset.actorId); break;
+            case 'delete-actor': deleteActor(event.currentTarget.dataset.actorId); break;
+            case 'generate-sample-actors': generateSampleActors(); break;
+            case 'add-stimulus': addStimulus(); break;
+            case 'select-stimulus': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; App.render(); break;
+            case 'duplicate-stimulus': duplicateStimulus(event.currentTarget.dataset.stimulusId); break;
+            case 'delete-stimulus': deleteStimulus(event.currentTarget.dataset.stimulusId); break;
+            case 'sort-stimuli': sortStimuli(); App.render(); break;
+            case 'generate-stimulus': await generateStimulus(event.currentTarget.dataset.stimulusId); break;
+            case 'generate-field': await generateStimulus(event.currentTarget.dataset.stimulusId, event.currentTarget.dataset.fieldName); break;
+            case 'export-png': await ExportEngine.exportStimulus(getStimulus(event.currentTarget.dataset.stimulusId)); break;
+            case 'preview-prev': appState.slideshowIndex = Math.max(0, appState.slideshowIndex - 1); App.render(); break;
+            case 'preview-next': appState.slideshowIndex = Math.min(getSortedStimuli().length - 1, appState.slideshowIndex + 1); App.render(); break;
+            case 'goto-stimuli': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; appState.route = 'stimuli'; App.render(); break;
+            case 'preview-select': appState.slideshowIndex = Number(event.currentTarget.dataset.index); App.render(); break;
+            default: console.warn('Action non gérée', action);
+          }
+        } catch (error) {
+          console.error(error);
+          pushToast(error.message || 'Une erreur est survenue.', 'error');
+        }
+      }
+
+      function addActor() {
+        appState.scenario.actors.push({ id: uid('actor'), name: 'Nouvel acteur', role: 'internal', organization: appState.scenario.client.name, title: 'Titre / fonction', country: appState.scenario.client.country, avatar_initials: 'NA', avatar_url: '' });
+        App.render();
+      }
+
+      function duplicateActor(actorId) {
+        const actor = getActor(actorId);
+        if (!actor) return;
+        appState.scenario.actors.push({ ...deepClone(actor), id: uid('actor'), name: `${actor.name} (copie)` });
+        App.render();
+      }
+
+      function deleteActor(actorId) {
+        if (appState.scenario.actors.length === 1) throw new Error('Au moins un acteur est requis.');
+        appState.scenario.actors = appState.scenario.actors.filter((actor) => actor.id !== actorId);
+        appState.scenario.stimuli.forEach((stimulus) => {
+          if (stimulus.actor_id === actorId) stimulus.actor_id = appState.scenario.actors[0].id;
+        });
+        App.render();
+      }
+
+      function generateSampleActors() {
+        const clientName = appState.scenario.client.name || 'Client';
+        const additions = [
+          { name: 'Sophie Laurent', role: 'journalist', organization: 'Les Échos', title: 'Journaliste cyber', country: 'FR' },
+          { name: 'Marc Rivière', role: 'analyst', organization: 'Cabinet Delta', title: 'Analyste menace', country: 'FR' },
+          { name: 'Nora Benali', role: 'partner', organization: 'Prestataire cloud', title: 'Responsable relation client', country: 'FR' }
+        ];
+        additions.forEach((item) => appState.scenario.actors.push({ id: uid('actor'), avatar_initials: initialsFromName(item.name), avatar_url: '', ...item, organization: item.organization.replace('Client', clientName) }));
+        App.render();
+        pushToast('Acteurs types ajoutés.', 'success');
+      }
+
+      function addStimulus() {
+        const actorId = appState.scenario.actors[0]?.id;
+        const stimulus = makeStimulus('email_internal', actorId, nextStimulusOffset());
+        appState.scenario.stimuli.push(stimulus);
+        appState.selectedStimulusId = stimulus.id;
+        App.render();
+      }
+
+      function duplicateStimulus(stimulusId) {
+        const stimulus = getStimulus(stimulusId);
+        if (!stimulus) return;
+        const copy = deepClone(stimulus);
+        copy.id = uid('stimulus');
+        copy.timestamp_offset_minutes += 15;
+        appState.scenario.stimuli.push(copy);
+        appState.selectedStimulusId = copy.id;
+        App.render();
+      }
+
+      function deleteStimulus(stimulusId) {
+        appState.scenario.stimuli = appState.scenario.stimuli.filter((stimulus) => stimulus.id !== stimulusId);
+        appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
+        App.render();
+      }
+
+      function sortStimuli() {
+        appState.scenario.stimuli.sort((a, b) => a.timestamp_offset_minutes - b.timestamp_offset_minutes);
+      }
+
+      async function generateStimulus(stimulusId, fieldName = null) {
+        const stimulus = getStimulus(stimulusId);
+        if (!stimulus) return;
+        pushToast('Génération en cours…', 'success');
+        const generated = await AITextGenerator.generateForStimulus(stimulus, fieldName);
+        Object.entries(generated).forEach(([key, value]) => {
+          if (!fieldName || fieldName === key) stimulus.fields[key] = value;
+          stimulus.generated_text[key] = value;
+        });
+        if (fieldName && generated[fieldName] === undefined) {
+          const first = Object.values(generated)[0];
+          if (first !== undefined) stimulus.fields[fieldName] = first;
+        }
+        stimulus.status = 'ready';
+        App.render();
+      }
+
+      function replaceStimulusTemplate(stimulus, newChannel) {
+        const template = TEMPLATE_LIBRARY[newChannel];
+        stimulus.channel = newChannel;
+        stimulus.template_id = template.template_id;
+        stimulus.fields = deepClone(template.defaults);
+      }
+
+      function nextStimulusOffset() {
+        return (Math.max(0, ...appState.scenario.stimuli.map((item) => item.timestamp_offset_minutes)) || 0) + 30;
+      }
+
+      function getActor(id) { return appState.scenario.actors.find((actor) => actor.id === id); }
+      function getStimulus(id) { return appState.scenario.stimuli.find((stimulus) => stimulus.id === id); }
+      function getSelectedStimulus() {
+        if (!appState.selectedStimulusId) appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
+        return getStimulus(appState.selectedStimulusId);
+      }
+      function getSortedStimuli() { return [...appState.scenario.stimuli].sort((a, b) => a.timestamp_offset_minutes - b.timestamp_offset_minutes); }
+
+      function saveScenarioToFile() {
+        const json = JSON.stringify(appState.scenario, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        downloadBlob(blob, `crisisstim_${slugify(appState.scenario.name)}_${new Date().toISOString().slice(0, 10)}.json`);
+        pushToast('Scénario exporté en JSON.', 'success');
+      }
+
+      function loadScenarioFromFile() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,application/json';
+        input.addEventListener('change', (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (loadEvent) => {
+            try {
+              appState.scenario = mergeScenario(JSON.parse(loadEvent.target.result));
+              appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
+              App.render();
+              pushToast('Scénario chargé avec succès.', 'success');
+            } catch (error) {
+              pushToast(`Fichier JSON invalide : ${error.message}`, 'error');
+            }
+          };
+          reader.readAsText(file);
+        });
+        input.click();
+      }
+
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function slugify(input) {
+        return String(input || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'stimulus';
+      }
+
+      function setByPath(target, path, value) {
+        const parts = path.split('.');
+        const last = parts.pop();
+        let ref = target;
+        parts.forEach((part) => { ref = ref[part]; });
+        ref[last] = value;
+      }
+
+      function initialsFromName(name) {
+        return String(name || '').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join('') || 'NA';
+      }
+
+      function parseArrayField(value) {
+        if (Array.isArray(value)) return value;
+        try { return JSON.parse(value || '[]'); } catch { return String(value || '').split(',').map((item) => item.trim()).filter(Boolean); }
+      }
+
+      function formatMetric(value) {
+        const num = Number(value || 0);
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1).replace('.0', '')}M`;
+        if (num >= 1000) return `${(num / 1000).toFixed(1).replace('.0', '')}K`;
+        return String(num);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+      function escapeAttribute(value) { return escapeHtml(value).replace(/`/g, '&#96;'); }
+
+      function iconReply() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"></path></svg>'; }
+      function iconReplyAll() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 9V5l-7 7 7 7v-4.1c2.3 0 4.2.3 5.9 1"></path><path d="M14 9V5l7 7-7 7v-4.1c-3.3 0-6.1.8-8.4 2.5"></path></svg>'; }
+      function iconForward() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"></path></svg>'; }
+      function iconRetweet() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>'; }
+      function iconLike() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6c-1.5-1.5-4-1.5-5.5 0L12 7.9 8.7 4.6c-1.5-1.5-4-1.5-5.5 0s-1.5 4 0 5.5l3.3 3.3L12 21l5.5-7.6 3.3-3.3c1.5-1.5 1.5-4 0-5.5z"></path></svg>'; }
+      function iconViews() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>'; }
+      function iconShare() { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"></line><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"></line></svg>'; }
+      function verifiedBadge(type) {
+        const fill = type === 'gold' ? '#f2b10c' : type === 'grey' ? '#8392a5' : '#1d9bf0';
+        return `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="${fill}"></circle><path d="M17.2 8.8l-6.1 6.4-3-2.9" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+      }
+
+      App.init();
+    })();
+  </script>
+</body>
+</html>
