@@ -456,8 +456,13 @@
       const STORAGE_KEY = 'crisisstim_autosave_v1';
       const SETTINGS_KEY = 'crisisstim_settings_v1';
       const DEFAULT_MODELS = {
-        openai: ['gpt-4o', 'gpt-4o-mini'],
         anthropic: ['claude-sonnet-4-20250514']
+      };
+      const PROVIDER_STORAGE_KEYS = {
+        aiProvider: 'aiProvider',
+        azureEndpoint: 'azureEndpoint',
+        azureApiKey: 'azureApiKey',
+        azureDeployment: 'azureDeployment'
       };
       const ROLES = [
         { value: 'journalist', label: 'Journaliste' },
@@ -667,7 +672,7 @@
           scenario: { type: 'Ransomware', summary: 'Une attaque par ransomware touche le système d’information d’un groupe du CAC40. Les opérations critiques sont perturbées, la presse commence à relayer l’incident et les autorités sont alertées.', start_date: '2026-03-15T08:00', timezone: 'Europe/Paris' },
           actors,
           stimuli: [],
-          settings: { language: 'fr', ai_provider: 'openai', ai_model: 'gpt-4o', ai_api_key: '' }
+          settings: { language: 'fr', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '' }
         };
         const samples = [
           makeStimulus('email_internal', actors[1].id, 0),
@@ -699,6 +704,7 @@
       function loadInitialScenario() {
         const saved = localStorage.getItem(STORAGE_KEY);
         const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || 'null');
+        const providerSettings = loadProviderSettings();
         let scenario = defaultScenario();
         if (saved) {
           try {
@@ -710,6 +716,8 @@
         if (settings) {
           scenario.settings = { ...scenario.settings, ...settings };
         }
+        scenario.settings = { ...scenario.settings, ...providerSettings };
+        normalizeProviderSettingsInPlace(scenario.settings);
         if (!scenario.stimuli.length) scenario.stimuli = [makeStimulus('email_internal', scenario.actors[0]?.id || uid('actor'), 0)];
         return scenario;
       }
@@ -725,6 +733,7 @@
           actors: Array.isArray(input.actors) && input.actors.length ? input.actors : base.actors,
           stimuli: Array.isArray(input.stimuli) ? input.stimuli.map(normalizeStimulus) : base.stimuli
         };
+        normalizeProviderSettingsInPlace(merged.settings);
         return merged;
       }
 
@@ -751,10 +760,27 @@
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.scenario));
           localStorage.setItem(SETTINGS_KEY, JSON.stringify(appState.scenario.settings));
+          persistProviderSettings(appState.scenario.settings);
           if (showToast) pushToast('Scénario enregistré localement.', 'success');
         } catch (error) {
           pushToast(`Échec de la sauvegarde locale : ${error.message}`, 'error');
         }
+      }
+
+      function loadProviderSettings() {
+        return {
+          ai_provider: localStorage.getItem(PROVIDER_STORAGE_KEYS.aiProvider) || undefined,
+          azure_endpoint: localStorage.getItem(PROVIDER_STORAGE_KEYS.azureEndpoint) || undefined,
+          azure_api_key: localStorage.getItem(PROVIDER_STORAGE_KEYS.azureApiKey) || undefined,
+          azure_deployment: localStorage.getItem(PROVIDER_STORAGE_KEYS.azureDeployment) || undefined
+        };
+      }
+
+      function persistProviderSettings(settings) {
+        localStorage.setItem(PROVIDER_STORAGE_KEYS.aiProvider, settings.ai_provider || 'anthropic');
+        localStorage.setItem(PROVIDER_STORAGE_KEYS.azureEndpoint, settings.azure_endpoint || '');
+        localStorage.setItem(PROVIDER_STORAGE_KEYS.azureApiKey, settings.azure_api_key || '');
+        localStorage.setItem(PROVIDER_STORAGE_KEYS.azureDeployment, settings.azure_deployment || '');
       }
 
       function pushToast(message, type = 'success') {
@@ -818,7 +844,7 @@
                   <span class="pill">${escapeHtml(appState.scenario.name)}</span>
                   <span class="pill">${appState.scenario.stimuli.length} stimuli</span>
                   <span class="pill">${appState.scenario.actors.length} acteurs</span>
-                  <span class="pill">${escapeHtml(appState.scenario.settings.ai_provider)} / ${escapeHtml(appState.scenario.settings.ai_model)}</span>
+                  <span class="pill">${renderProviderSummary(appState.scenario.settings)}</span>
                 </div>
               </section>
               ${renderCurrentView()}
@@ -851,6 +877,8 @@
       function renderSettingsView() {
         const settings = appState.scenario.settings;
         const models = DEFAULT_MODELS[settings.ai_provider] || [];
+        const isAnthropic = settings.ai_provider === 'anthropic';
+        const isAzure = settings.ai_provider === 'azure_openai';
         return `
           <section class="grid cols-2">
             <article class="card">
@@ -858,21 +886,37 @@
               <div class="field-grid cols-2">
                 <label class="field">Fournisseur AI
                   <select data-bind="settings.ai_provider">
-                    <option value="openai" ${settings.ai_provider === 'openai' ? 'selected' : ''}>OpenAI</option>
                     <option value="anthropic" ${settings.ai_provider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
+                    <option value="azure_openai" ${settings.ai_provider === 'azure_openai' ? 'selected' : ''}>Azure OpenAI</option>
                   </select>
                 </label>
-                <label class="field">Modèle
-                  <select data-bind="settings.ai_model">
-                    ${models.map((model) => `<option value="${model}" ${settings.ai_model === model ? 'selected' : ''}>${model}</option>`).join('')}
-                  </select>
-                </label>
-                <label class="field" style="grid-column: 1 / -1;">Clé API
-                  <div style="display:flex; gap:10px;">
-                    <input id="api-key-input" type="password" data-bind="settings.ai_api_key" value="${escapeAttribute(settings.ai_api_key)}" placeholder="sk-...">
-                    <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
-                  </div>
-                </label>
+                ${isAnthropic ? `
+                  <label class="field">Modèle
+                    <select data-bind="settings.ai_model">
+                      ${models.map((model) => `<option value="${model}" ${settings.ai_model === model ? 'selected' : ''}>${model}</option>`).join('')}
+                    </select>
+                  </label>
+                  <label class="field" style="grid-column: 1 / -1;">Clé API Anthropic
+                    <div style="display:flex; gap:10px;">
+                      <input id="api-key-input" type="password" data-bind="settings.ai_api_key" value="${escapeAttribute(settings.ai_api_key)}" placeholder="sk-ant-...">
+                      <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
+                    </div>
+                  </label>
+                ` : ''}
+                ${isAzure ? `
+                  <label class="field">Endpoint Azure
+                    <input type="url" data-bind="settings.azure_endpoint" value="${escapeAttribute(settings.azure_endpoint || '')}" placeholder="https://<resource>.openai.azure.com/">
+                  </label>
+                  <label class="field">Nom du déploiement
+                    <input type="text" data-bind="settings.azure_deployment" value="${escapeAttribute(settings.azure_deployment || '')}" placeholder="gpt-4o">
+                  </label>
+                  <label class="field" style="grid-column: 1 / -1;">Clé API Azure
+                    <div style="display:flex; gap:10px;">
+                      <input id="api-key-input" type="password" data-bind="settings.azure_api_key" value="${escapeAttribute(settings.azure_api_key || '')}" placeholder="Azure API key">
+                      <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
+                    </div>
+                  </label>
+                ` : ''}
                 <label class="field">Langue par défaut
                   <select data-bind="settings.language">
                     ${['fr', 'en', 'de', 'es', 'it'].map((lang) => `<option value="${lang}" ${settings.language === lang ? 'selected' : ''}>${lang.toUpperCase()}</option>`).join('')}
@@ -883,7 +927,7 @@
                 <button class="btn btn-primary" data-action="test-connection">Tester la connexion</button>
                 <button class="btn btn-secondary" data-action="save-local">Sauvegarder localement</button>
               </div>
-              <p class="helper" style="margin-top:14px;">Votre clé API est stockée localement dans votre navigateur et n’est jamais transmise ailleurs qu’à l’API du fournisseur choisi.</p>
+              <p class="helper" style="margin-top:14px;">Les paramètres ${isAzure ? 'Azure OpenAI' : 'Anthropic'} sont stockés localement dans votre navigateur et transmis uniquement au fournisseur sélectionné.</p>
             </article>
             <article class="card">
               <div class="section-header"><h3>Modules implémentés</h3></div>
@@ -1368,7 +1412,11 @@
 
       const AITextGenerator = {
         async testConnection() {
-          if (!appState.scenario.settings.ai_api_key) throw new Error('Veuillez saisir une clé API avant de tester la connexion.');
+          const { ai_provider, ai_api_key, azure_endpoint, azure_api_key, azure_deployment } = appState.scenario.settings;
+          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error('Veuillez saisir une clé API Anthropic avant de tester la connexion.');
+          if (ai_provider === 'azure_openai') {
+            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error('Veuillez renseigner l’endpoint, la clé API et le déploiement Azure avant de tester la connexion.');
+          }
           const prompt = 'Réponds uniquement avec un objet JSON {"ok": true, "message": "connexion valide"}';
           return this.generate('settings_test', prompt, null, true);
         },
@@ -1378,18 +1426,22 @@
           return this.generate(stimulus.channel, promptInfo.systemPrompt, promptInfo.userPrompt);
         },
         async generate(channel, systemPrompt, userPrompt = null, quiet = false) {
-          const { ai_provider, ai_api_key, ai_model } = appState.scenario.settings;
-          if (!ai_api_key) throw new Error('Clé API manquante.');
-          if (ai_provider === 'openai') {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          const { ai_provider, ai_api_key, ai_model, azure_endpoint, azure_api_key, azure_deployment } = appState.scenario.settings;
+          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error('Clé API Anthropic manquante.');
+          if (ai_provider === 'azure_openai') {
+            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error('Configuration Azure OpenAI incomplète.');
+            const normalizedEndpoint = azure_endpoint.replace(/\/+$/, '');
+            const response = await fetch(`${normalizedEndpoint}/openai/deployments/${encodeURIComponent(azure_deployment)}/chat/completions?api-version=2024-02-01`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ai_api_key}` },
-              body: JSON.stringify({ model: ai_model, temperature: 0.8, response_format: { type: 'json_object' }, messages: [{ role: 'system', content: systemPrompt }, ...(userPrompt ? [{ role: 'user', content: userPrompt }] : [])] })
+              headers: { 'Content-Type': 'application/json', 'api-key': azure_api_key },
+              body: JSON.stringify({ temperature: 0.8, messages: [{ role: 'system', content: systemPrompt }, ...(userPrompt ? [{ role: 'user', content: userPrompt }] : [{ role: 'user', content: 'Réponds en JSON strict.' }])] })
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error?.message || 'Erreur API OpenAI');
-            const parsed = JSON.parse(data.choices[0].message.content);
-            if (!quiet) pushToast('Contenu généré avec OpenAI.', 'success');
+            if (!response.ok) throw new Error(data.error?.message || 'Erreur API Azure OpenAI');
+            const content = data.choices?.[0]?.message?.content;
+            if (!content) throw new Error('Réponse Azure OpenAI vide.');
+            const parsed = JSON.parse(content);
+            if (!quiet) pushToast('Contenu généré avec Azure OpenAI.', 'success');
             return parsed;
           }
           if (ai_provider === 'anthropic') {
@@ -1515,8 +1567,9 @@
             setByPath(appState.scenario, input.dataset.bind, input.value);
             if (input.dataset.bind === 'settings.ai_provider') {
               const models = DEFAULT_MODELS[input.value];
-              appState.scenario.settings.ai_model = models[0];
+              if (models?.length) appState.scenario.settings.ai_model = models[0];
             }
+            persistProviderSettings(appState.scenario.settings);
             App.render();
           });
         });
@@ -1757,6 +1810,22 @@
 
       function slugify(input) {
         return String(input || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'stimulus';
+      }
+
+      function normalizeProviderSettingsInPlace(settings) {
+        if (!['anthropic', 'azure_openai'].includes(settings.ai_provider)) settings.ai_provider = 'anthropic';
+        if (!DEFAULT_MODELS.anthropic.includes(settings.ai_model)) settings.ai_model = DEFAULT_MODELS.anthropic[0];
+        settings.ai_api_key = settings.ai_api_key || '';
+        settings.azure_endpoint = settings.azure_endpoint || '';
+        settings.azure_api_key = settings.azure_api_key || '';
+        settings.azure_deployment = settings.azure_deployment || '';
+      }
+
+      function renderProviderSummary(settings) {
+        if (settings.ai_provider === 'azure_openai') {
+          return `Azure OpenAI / ${escapeHtml(settings.azure_deployment || 'déploiement non défini')}`;
+        }
+        return `Anthropic / ${escapeHtml(settings.ai_model || 'modèle non défini')}`;
       }
 
       function setByPath(target, path, value) {
