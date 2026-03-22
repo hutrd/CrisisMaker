@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CrisisStim - Générateur de stimuli</title>
+  <title>CrisisStim - Stimulus Generator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -465,77 +465,77 @@
         azureDeployment: 'azureDeployment'
       };
       const ROLES = [
-        { value: 'journalist', label: 'Journaliste' },
-        { value: 'authority', label: 'Autorité' },
-        { value: 'client_b2b', label: 'Client B2B' },
-        { value: 'client_b2c', label: 'Client B2C' },
-        { value: 'internal', label: 'Interne' },
-        { value: 'partner', label: 'Partenaire' },
-        { value: 'attacker', label: 'Attaquant' },
-        { value: 'analyst', label: 'Analyste' }
+        { value: 'journalist', label: 'Journalist' },
+        { value: 'authority', label: 'Authority' },
+        { value: 'client_b2b', label: 'B2B Client' },
+        { value: 'client_b2c', label: 'B2C Client' },
+        { value: 'internal', label: 'Internal' },
+        { value: 'partner', label: 'Partner' },
+        { value: 'attacker', label: 'Attacker' },
+        { value: 'analyst', label: 'Analyst' }
       ];
       const COUNTRIES = ['FR', 'US', 'GB', 'DE', 'ES', 'IT', 'BE', 'CH', 'CA'];
       const TIMEZONES = ['Europe/Paris', 'UTC', 'Europe/London', 'America/New_York'];
       const CHANNEL_META = {
-        email_internal: { label: 'Email interne', color: '#2563eb', category: 'Email' },
-        email_external: { label: 'Email externe', color: '#3b82f6', category: 'Email' },
-        email_authority: { label: 'Email autorité', color: '#0f766e', category: 'Email' },
-        article_press: { label: 'Article de presse', color: '#6b7280', category: 'Presse' },
+        email_internal: { label: 'Internal email', color: '#2563eb', category: 'Email' },
+        email_external: { label: 'External email', color: '#3b82f6', category: 'Email' },
+        email_authority: { label: 'Authority email', color: '#0f766e', category: 'Email' },
+        article_press: { label: 'Press article', color: '#6b7280', category: 'Press' },
         breaking_news_tv: { label: 'Breaking News TV', color: '#dc2626', category: 'TV' },
-        post_twitter: { label: 'Post X/Twitter', color: '#16a34a', category: 'Social' },
-        post_linkedin: { label: 'Post LinkedIn', color: '#0a66c2', category: 'Social' },
-        press_release: { label: 'Communiqué de presse', color: '#7c3aed', category: 'Corporate' },
+        post_twitter: { label: 'X/Twitter post', color: '#16a34a', category: 'Social' },
+        post_linkedin: { label: 'LinkedIn post', color: '#0a66c2', category: 'Social' },
+        press_release: { label: 'Press release', color: '#7c3aed', category: 'Corporate' },
         sms_notification: { label: 'SMS / Notification', color: '#f59e0b', category: 'Mobile' },
-        internal_memo: { label: 'Note interne', color: '#4b5563', category: 'Corporate' }
+        internal_memo: { label: 'Internal memo', color: '#4b5563', category: 'Corporate' }
       };
 
       const TEMPLATE_LIBRARY = {
         email_internal: {
-          label: 'Outlook interne',
+          label: 'Internal Outlook',
           template_id: 'outlook',
           defaults: {
-            from_name: 'Jean Dupont',
-            from_email: 'jean.dupont@client.com',
-            to: 'Comité de crise',
-            cc: 'DSI, RSSI',
-            subject: 'URGENT - Incident de sécurité en cours',
+            from_name: 'Claire Martin',
+            from_email: 'claire.martin@client.com',
+            to: 'Crisis Committee',
+            cc: 'CIO, CISO',
+            subject: 'URGENT - Security incident in progress',
             date: formatLocalDateTime(new Date()),
-            body: '<p>Bonjour à toutes et à tous,</p><p>Nous faisons face à un incident de cybersécurité impactant une partie du système d’information. Les équipes IT, cybersécurité et communication sont mobilisées.</p><ul><li>Isolement des postes suspects en cours</li><li>Analyse forensic initiale lancée</li><li>Point de situation à H+30</li></ul><p><strong>Consigne :</strong> ne redémarrez aucun poste et remontez tout comportement inhabituel au SOC.</p><p>Bien cordialement,<br>Jean Dupont</p>',
+            body: '<p>Hello everyone,</p><p>We are dealing with a cybersecurity incident affecting part of the information system. IT, cyber, and communications teams are fully mobilized.</p><ul><li>Isolation of suspicious workstations is in progress</li><li>Initial forensic analysis has started</li><li>Situation update planned at H+30</li></ul><p><strong>Instruction:</strong> do not reboot any workstation and report any unusual behavior to the SOC.</p><p>Best regards,<br>Claire Martin</p>',
             has_attachment: true,
             attachment_name: 'Rapport_incident_v1.pdf',
             importance: 'high'
           },
           fields: [
-            field('from_name', 'Expéditeur', 'text'), field('from_email', 'Email expéditeur', 'text'), field('to', 'À', 'text'), field('cc', 'Cc', 'text'), field('subject', 'Objet', 'text'), field('date', 'Date', 'text'), field('importance', 'Importance', 'select', { options: ['high', 'normal'] }), field('has_attachment', 'Pièce jointe', 'checkbox'), field('attachment_name', 'Nom PJ', 'text'), field('body', 'Corps HTML', 'textarea')
+            field('from_name', 'Sender', 'text'), field('from_email', 'Sender email', 'text'), field('to', 'To', 'text'), field('cc', 'Cc', 'text'), field('subject', 'Subject', 'text'), field('date', 'Date', 'text'), field('importance', 'Importance', 'select', { options: ['high', 'normal'] }), field('has_attachment', 'Attachment', 'checkbox'), field('attachment_name', 'Attachment name', 'text'), field('body', 'HTML body', 'textarea')
           ]
         },
         article_press: {
-          label: 'Article Le Monde',
+          label: 'Press article',
           template_id: 'lemonde',
           defaults: {
-            headline: 'Une cyberattaque massive paralyse le groupe X',
-            subheadline: 'Les systèmes informatiques sont dégradés depuis le début de matinée, alors que les premières investigations évoquent une intrusion sophistiquée.',
-            author: 'Par Jean Dupont',
-            date: '15 mars 2026 à 10h42',
+            headline: 'A massive cyberattack cripples Group X',
+            subheadline: 'IT systems have been degraded since early morning as initial investigations point to a sophisticated intrusion.',
+            author: 'By John Carter',
+            date: 'March 15, 2026 at 10:42 AM',
             category: 'Pixels',
-            body: '<p>Le groupe X a confirmé ce samedi faire face à un incident cyber majeur, ayant conduit à l’arrêt de plusieurs applications internes et services de production. Les investigations menées par les équipes de sécurité se poursuivent pour déterminer l’étendue exacte de la compromission.</p><p>Selon plusieurs sources proches du dossier, l’entreprise a réuni dès l’aube une cellule de crise associant direction générale, informatique, sécurité, communication et conseil externe. Une partie des échanges internes s’effectue désormais via des canaux de secours.</p><p>"La priorité absolue reste la continuité des activités critiques et la protection des données", assure un porte-parole du groupe. Aucun calendrier de rétablissement complet n’a encore été communiqué.</p><p>L’événement rappelle la vulnérabilité persistante des grands groupes face aux chaînes d’attaque mêlant compromission initiale, déplacement latéral et chiffrement opportuniste. Les autorités pourraient être saisies rapidement si des données personnelles se confirmaient concernées.</p>',
-            image_caption: 'Le siège du groupe X, à La Défense.',
-            read_time: '3 min de lecture',
+            body: '<p>Group X confirmed on Saturday that it is facing a major cyber incident that forced several internal applications and production services offline. Security teams are still investigating to determine the exact scope of the compromise.</p><p>According to several sources close to the matter, the company assembled a crisis cell before dawn bringing together executive leadership, IT, security, communications, and external advisers. Part of the internal coordination has now moved to backup channels.</p><p>"The absolute priority remains continuity of critical activities and protection of data," a spokesperson said. No timeline for full recovery has been announced yet.</p><p>The event highlights the persistent vulnerability of large enterprises to attack chains that combine initial compromise, lateral movement, and opportunistic encryption. Authorities could be notified quickly if personal data is confirmed to be affected.</p>',
+            image_caption: 'Group X headquarters.',
+            read_time: '3 min read',
             is_premium: false
           },
-          fields: [field('headline', 'Titre', 'text'), field('subheadline', 'Chapô', 'textarea'), field('author', 'Auteur', 'text'), field('date', 'Date', 'text'), field('category', 'Rubrique', 'text'), field('read_time', 'Temps de lecture', 'text'), field('is_premium', 'Article abonné', 'checkbox'), field('image_caption', 'Légende photo', 'text'), field('body', 'Corps HTML', 'textarea')]
+          fields: [field('headline', 'Headline', 'text'), field('subheadline', 'Standfirst', 'textarea'), field('author', 'Author', 'text'), field('date', 'Date', 'text'), field('category', 'Section', 'text'), field('read_time', 'Read time', 'text'), field('is_premium', 'Premium article', 'checkbox'), field('image_caption', 'Image caption', 'text'), field('body', 'HTML body', 'textarea')]
         },
         post_twitter: {
           label: 'Post X/Twitter',
           template_id: 'twitter',
           defaults: {
-            display_name: 'Jean Dupont',
+            display_name: 'John Carter',
             handle: '@jeandupont',
             verified: true,
             verified_type: 'blue',
             avatar_initials: 'JD',
             avatar_color: '#1da1f2',
-            text: 'Le groupe X confirme un incident cyber majeur. Les premiers éléments suggèrent un impact opérationnel important. Les prochaines heures seront décisives pour mesurer l’ampleur réelle de la compromission. #cybersecurity #crisis',
+            text: 'Group X confirms a major cyber incident. Early indicators suggest a significant operational impact. The next few hours will be critical to assess the true scale of the compromise. #cybersecurity #crisis',
             date: '8:32 AM · Mar 15, 2026',
             retweets: 1243,
             quotes: 89,
@@ -544,78 +544,78 @@
             replies: 312,
             has_image: false
           },
-          fields: [field('display_name', 'Nom affiché', 'text'), field('handle', 'Handle', 'text'), field('verified', 'Compte vérifié', 'checkbox'), field('verified_type', 'Type de badge', 'select', { options: ['blue', 'gold', 'grey'] }), field('avatar_initials', 'Initiales avatar', 'text'), field('avatar_color', 'Couleur avatar', 'text'), field('text', 'Texte', 'textarea'), field('date', 'Date', 'text'), field('retweets', 'Retweets', 'number'), field('quotes', 'Quotes', 'number'), field('likes', 'Likes', 'number'), field('views', 'Vues', 'number'), field('replies', 'Réponses', 'number')]
+          fields: [field('display_name', 'Display name', 'text'), field('handle', 'Handle', 'text'), field('verified', 'Verified account', 'checkbox'), field('verified_type', 'Badge type', 'select', { options: ['blue', 'gold', 'grey'] }), field('avatar_initials', 'Avatar initials', 'text'), field('avatar_color', 'Avatar color', 'text'), field('text', 'Text', 'textarea'), field('date', 'Date', 'text'), field('retweets', 'Reposts', 'number'), field('quotes', 'Quotes', 'number'), field('likes', 'Likes', 'number'), field('views', 'Views', 'number'), field('replies', 'Replies', 'number')]
         },
         post_linkedin: {
           label: 'Post LinkedIn',
           template_id: 'linkedin',
           defaults: {
-            display_name: 'Jean Dupont',
-            title: 'Journaliste cybersécurité',
+            display_name: 'John Carter',
+            title: 'Cybersecurity journalist',
             avatar_initials: 'JD',
             avatar_color: '#0A66C2',
-            text: 'Les crises cyber ne se jouent plus uniquement sur le terrain technique. Elles se jouent aussi dans la vitesse de coordination entre IT, sécurité, juridique, communication et direction générale.\n\nDans le cas du groupe X, les premières heures vont être structurantes : cartographier les impacts, stabiliser les opérations critiques et donner un cap clair aux parties prenantes.\n\nLes organisations qui préparent leurs stimuli, leurs messages et leurs routines décisionnelles en amont gagnent un temps précieux. #cybersecurity #resilience #crisismanagement',
-            date: '2 h',
+            text: 'Cyber crises are no longer fought only on the technical front. They are also won or lost through the speed of coordination across IT, security, legal, communications, and executive leadership.\n\nIn Group X\'s case, the first hours will be decisive: map the impacts, stabilize critical operations, and give stakeholders a clear direction.\n\nOrganizations that prepare their stimuli, messages, and decision-making routines in advance save precious time. #cybersecurity #resilience #crisismanagement',
+            date: '2h',
             reactions_count: 234,
             comments_count: 45,
             reposts_count: 12,
             reaction_types: ['👍', '👏', '💡']
           },
-          fields: [field('display_name', 'Nom affiché', 'text'), field('title', 'Titre', 'text'), field('avatar_initials', 'Initiales avatar', 'text'), field('avatar_color', 'Couleur avatar', 'text'), field('text', 'Texte', 'textarea'), field('date', 'Date relative', 'text'), field('reactions_count', 'Réactions', 'number'), field('comments_count', 'Commentaires', 'number'), field('reposts_count', 'Republications', 'number'), field('reaction_types', 'Réactions (JSON array)', 'textarea')]
+          fields: [field('display_name', 'Display name', 'text'), field('title', 'Title', 'text'), field('avatar_initials', 'Avatar initials', 'text'), field('avatar_color', 'Avatar color', 'text'), field('text', 'Text', 'textarea'), field('date', 'Relative date', 'text'), field('reactions_count', 'Reactions', 'number'), field('comments_count', 'Comments', 'number'), field('reposts_count', 'Reposts', 'number'), field('reaction_types', 'Reactions (JSON array)', 'textarea')]
         },
         breaking_news_tv: {
-          label: 'BFM Breaking News',
+          label: 'Breaking news banner',
           template_id: 'bfm',
           defaults: {
-            headline: 'CYBERATTAQUE MASSIVE CONTRE LE GROUPE X',
-            subline: 'Les systèmes sont paralysés depuis ce matin',
-            ticker: 'Le groupe X confirme un incident majeur - Une cellule de crise a été activée - Les opérations prioritaires basculent sur des procédures manuelles',
+            headline: 'MASSIVE CYBERATTACK HITS GROUP X',
+            subline: 'Systems have been paralyzed since this morning',
+            ticker: 'Group X confirms a major incident - A crisis cell has been activated - Priority operations switch to manual procedures',
             time: '10:42',
-            category: 'ALERTE INFO'
+            category: 'BREAKING NEWS'
           },
-          fields: [field('headline', 'Titre', 'text'), field('subline', 'Sous-titre', 'text'), field('ticker', 'Ticker', 'textarea'), field('time', 'Heure', 'text'), field('category', 'Catégorie', 'text')]
+          fields: [field('headline', 'Headline', 'text'), field('subline', 'Subheadline', 'text'), field('ticker', 'Ticker', 'textarea'), field('time', 'Time', 'text'), field('category', 'Category', 'text')]
         },
         email_authority: {
-          label: 'Alerte ANSSI / CERT-FR',
+          label: 'ANSSI / CERT-FR alert',
           template_id: 'anssi',
           defaults: {
             reference: 'CERTFR-2026-ALE-003',
             from_name: 'CERT-FR',
             from_email: 'cert-fr@ssi.gouv.fr',
-            to: 'RSSI - Groupe X',
-            subject: 'Alerte - Vulnérabilité critique exploitée activement',
-            date: '15 mars 2026',
-            body: '<p>Le CERT-FR a connaissance d’une exploitation active visant des environnements exposés sur Internet.</p><p><strong>Systèmes potentiellement affectés :</strong></p><ul><li>Serveurs VPN exposés</li><li>Concentrateurs d’accès distants</li><li>Services d’administration non segmentés</li></ul><p><strong>Recommandations immédiates :</strong></p><ul><li>Appliquer les correctifs disponibles</li><li>Réinitialiser les secrets associés</li><li>Rechercher les indicateurs de compromission joints</li></ul>',
+            to: 'CISO - Group X',
+            subject: 'Alert - Critical vulnerability actively exploited',
+            date: 'March 15, 2026',
+            body: '<p>CERT-FR is aware of active exploitation targeting internet-exposed environments.</p><p><strong>Potentially affected systems:</strong></p><ul><li>Exposed VPN servers</li><li>Remote access concentrators</li><li>Unsegmented administration services</li></ul><p><strong>Immediate recommendations:</strong></p><ul><li>Apply available patches</li><li>Reset associated secrets</li><li>Search for attached indicators of compromise</li></ul>',
             severity: 'critical'
           },
-          fields: [field('reference', 'Référence', 'text'), field('from_name', 'Nom expéditeur', 'text'), field('from_email', 'Email expéditeur', 'text'), field('to', 'Destinataire', 'text'), field('subject', 'Objet', 'text'), field('date', 'Date', 'text'), field('severity', 'Sévérité', 'select', { options: ['critical', 'high', 'medium'] }), field('body', 'Corps HTML', 'textarea')]
+          fields: [field('reference', 'Reference', 'text'), field('from_name', 'Sender name', 'text'), field('from_email', 'Sender email', 'text'), field('to', 'Recipient', 'text'), field('subject', 'Subject', 'text'), field('date', 'Date', 'text'), field('severity', 'Severity', 'select', { options: ['critical', 'high', 'medium'] }), field('body', 'HTML body', 'textarea')]
         },
         press_release: {
-          label: 'Communiqué de presse',
+          label: 'Press release',
           template_id: 'press_release',
           defaults: {
-            organization: 'Groupe X',
+            organization: 'Group X',
             logo_text: 'GROUPE X',
             logo_color: '#003366',
-            date: 'Paris, le 15 mars 2026',
-            title: 'Communiqué de presse - Incident de sécurité',
-            body: '<p>Le Groupe X confirme avoir détecté un incident de cybersécurité ayant affecté une partie limitée de son système d’information. Dès l’identification de l’événement, les dispositifs de réponse à incident ont été activés et des experts externes mobilisés.</p><p>Les équipes travaillent à restaurer progressivement les services prioritaires, tout en poursuivant les analyses techniques destinées à qualifier l’origine et l’étendue de l’incident. À ce stade, l’entreprise poursuit ses opérations essentielles selon des procédures adaptées.</p><p>Le Groupe X agit avec transparence auprès des autorités compétentes et informera ses parties prenantes de toute évolution significative.</p>',
-            contact_name: 'Service Communication',
+            date: 'Paris, March 15, 2026',
+            title: 'Press release - Security incident',
+            body: '<p>Group X confirms that it detected a cybersecurity incident affecting a limited portion of its information system. As soon as the event was identified, incident response measures were activated and external experts were engaged.</p><p>Teams are working to progressively restore priority services while continuing technical analysis to determine the origin and scope of the incident. At this stage, the company is maintaining essential operations using adapted procedures.</p><p>Group X is acting transparently with the competent authorities and will inform stakeholders of any significant developments.</p>',
+            contact_name: 'Communications Office',
             contact_email: 'presse@groupex.com',
             contact_phone: '+33 1 00 00 00 00'
           },
-          fields: [field('organization', 'Organisation', 'text'), field('logo_text', 'Texte logo', 'text'), field('logo_color', 'Couleur logo', 'text'), field('date', 'Date', 'text'), field('title', 'Titre', 'text'), field('body', 'Corps HTML', 'textarea'), field('contact_name', 'Contact', 'text'), field('contact_email', 'Email contact', 'text'), field('contact_phone', 'Téléphone', 'text')]
+          fields: [field('organization', 'Organization', 'text'), field('logo_text', 'Logo text', 'text'), field('logo_color', 'Logo color', 'text'), field('date', 'Date', 'text'), field('title', 'Title', 'text'), field('body', 'HTML body', 'textarea'), field('contact_name', 'Contact', 'text'), field('contact_email', 'Contact email', 'text'), field('contact_phone', 'Phone', 'text')]
         },
         sms_notification: {
           label: 'SMS / Notification',
           template_id: 'sms',
           defaults: {
-            sender: 'Alerte Sécurité',
-            text: 'Votre compte a fait l’objet d’un accès non autorisé suspect. Merci de réinitialiser votre mot de passe et de contacter le support sécurité.',
+            sender: 'Security Alert',
+            text: 'Your account was involved in a suspected unauthorized access. Please reset your password and contact the security support team.',
             time: '08:32',
             device: 'iphone'
           },
-          fields: [field('sender', 'Expéditeur', 'text'), field('text', 'Texte', 'textarea'), field('time', 'Heure', 'text'), field('device', 'Appareil', 'select', { options: ['iphone', 'android'] })]
+          fields: [field('sender', 'Sender', 'text'), field('text', 'Text', 'textarea'), field('time', 'Time', 'text'), field('device', 'Device', 'select', { options: ['iphone', 'android'] })]
         }
       };
 
@@ -641,6 +641,7 @@
         },
         render() {
           const root = document.getElementById('app');
+          setDocumentLanguage();
           root.innerHTML = renderAppShell();
           bindGlobalEvents();
           renderToasts();
@@ -648,6 +649,56 @@
       };
 
       function field(key, label, type, extra = {}) { return { key, label, type, ...extra }; }
+
+      function currentLanguage() {
+        return appState?.scenario?.settings?.language === 'fr' ? 'fr' : 'en';
+      }
+
+      function isFrenchUI() {
+        return currentLanguage() === 'fr';
+      }
+
+      function tt(en, fr) {
+        return isFrenchUI() ? fr : en;
+      }
+
+      function setDocumentLanguage() {
+        const lang = currentLanguage();
+        document.documentElement.lang = lang;
+        document.title = tt('CrisisStim - Stimulus Generator', 'CrisisStim - Générateur de stimuli');
+      }
+
+      function roleLabel(value) {
+        const labels = {
+          journalist: ['Journalist', 'Journaliste'],
+          authority: ['Authority', 'Autorité'],
+          client_b2b: ['B2B Client', 'Client B2B'],
+          client_b2c: ['B2C Client', 'Client B2C'],
+          internal: ['Internal', 'Interne'],
+          partner: ['Partner', 'Partenaire'],
+          attacker: ['Attacker', 'Attaquant'],
+          analyst: ['Analyst', 'Analyste']
+        };
+        const [en, fr] = labels[value] || [value, value];
+        return tt(en, fr);
+      }
+
+      function channelLabel(value) {
+        const labels = {
+          email_internal: ['Internal email', 'Email interne'],
+          email_external: ['External email', 'Email externe'],
+          email_authority: ['Authority email', 'Email autorité'],
+          article_press: ['Press article', 'Article de presse'],
+          breaking_news_tv: ['Breaking News TV', 'Breaking News TV'],
+          post_twitter: ['X/Twitter post', 'Post X/Twitter'],
+          post_linkedin: ['LinkedIn post', 'Post LinkedIn'],
+          press_release: ['Press release', 'Communiqué de presse'],
+          sms_notification: ['SMS / Notification', 'SMS / Notification'],
+          internal_memo: ['Internal memo', 'Note interne']
+        };
+        const [en, fr] = labels[value] || [value, value];
+        return tt(en, fr);
+      }
 
       function uid(prefix = 'id') {
         return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36).slice(-4)}`;
@@ -661,18 +712,18 @@
 
       function defaultScenario() {
         const actors = [
-          { id: uid('actor'), name: 'Jean Dupont', role: 'journalist', organization: 'Le Monde', title: 'Journaliste, rubrique Pixels', country: 'FR', avatar_initials: 'JD', avatar_url: '' },
-          { id: uid('actor'), name: 'Claire Martin', role: 'internal', organization: 'Groupe X', title: 'Directrice de crise cyber', country: 'FR', avatar_initials: 'CM', avatar_url: '' },
-          { id: uid('actor'), name: 'CERT-FR', role: 'authority', organization: 'ANSSI', title: 'Centre gouvernemental de veille, d’alerte et de réponse', country: 'FR', avatar_initials: 'CF', avatar_url: '' }
+          { id: uid('actor'), name: 'John Carter', role: 'journalist', organization: 'Global Daily', title: 'Cybersecurity reporter', country: 'US', avatar_initials: 'JC', avatar_url: '' },
+          { id: uid('actor'), name: 'Claire Martin', role: 'internal', organization: 'Group X', title: 'Cyber crisis director', country: 'FR', avatar_initials: 'CM', avatar_url: '' },
+          { id: uid('actor'), name: 'CERT-FR', role: 'authority', organization: 'ANSSI', title: 'Government cyber alert and response center', country: 'FR', avatar_initials: 'CF', avatar_url: '' }
         ];
         const scenario = {
           id: uid('scenario'),
-          name: 'Exercice ransomware - ClientX',
-          client: { name: 'Client X', sector: 'Banque', country: 'FR', logo_url: '' },
-          scenario: { type: 'Ransomware', summary: 'Une attaque par ransomware touche le système d’information d’un groupe du CAC40. Les opérations critiques sont perturbées, la presse commence à relayer l’incident et les autorités sont alertées.', start_date: '2026-03-15T08:00', timezone: 'Europe/Paris' },
+          name: 'Ransomware exercise - ClientX',
+          client: { name: 'Client X', sector: 'Banking', country: 'US', logo_url: '' },
+          scenario: { type: 'Ransomware', summary: 'A ransomware attack hits the information system of a large listed company. Critical operations are disrupted, the press starts reporting the incident, and authorities are alerted.', start_date: '2026-03-15T08:00', timezone: 'America/New_York' },
           actors,
           stimuli: [],
-          settings: { language: 'fr', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '' }
+          settings: { language: 'en', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '' }
         };
         const samples = [
           makeStimulus('email_internal', actors[1].id, 0),
@@ -710,7 +761,7 @@
           try {
             scenario = mergeScenario(JSON.parse(saved));
           } catch (error) {
-            console.warn('Impossible de restaurer le scénario sauvegardé.', error);
+            console.warn(tt('Unable to restore the saved scenario.', 'Impossible de restaurer le scénario sauvegardé.'), error);
           }
         }
         if (settings) {
@@ -761,9 +812,9 @@
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.scenario));
           localStorage.setItem(SETTINGS_KEY, JSON.stringify(appState.scenario.settings));
           persistProviderSettings(appState.scenario.settings);
-          if (showToast) pushToast('Scénario enregistré localement.', 'success');
+          if (showToast) pushToast(tt('Scenario saved locally.', 'Scénario enregistré localement.'), 'success');
         } catch (error) {
-          pushToast(`Échec de la sauvegarde locale : ${error.message}`, 'error');
+          pushToast(tt(`Local save failed: ${error.message}`, `Échec de la sauvegarde locale : ${error.message}`), 'error');
         }
       }
 
@@ -804,33 +855,33 @@
             <aside class="sidebar">
               <div class="brand">
                 <h1>CrisisStim</h1>
-                <p>Générateur autonome de stimuli pour exercices de crise cyber, en fichier HTML unique et sans serveur.</p>
+                <p>${tt('Standalone stimulus generator for cyber crisis exercises, delivered as a single serverless HTML file.', 'Générateur autonome de stimuli pour exercices de crise cyber, dans un seul fichier HTML sans serveur.')}</p>
               </div>
 
               <div>
-                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">Navigation</div>
+                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">${tt('Navigation', 'Navigation')}</div>
                 <div class="nav-list">
-                  ${renderNavButton('settings', 'Paramètres', 'API & langue')}
-                  ${renderNavButton('scenario', 'Scénario', 'Client, contexte, acteurs')}
-                  ${renderNavButton('stimuli', 'Stimuli', 'Timeline & édition')}
-                  ${renderNavButton('preview', 'Prévisualisation', 'Plein écran & export')}
+                  ${renderNavButton('settings', tt('Settings', 'Paramètres'), tt('API & language', 'API & langue'))}
+                  ${renderNavButton('scenario', tt('Scenario', 'Scénario'), tt('Client, context, actors', 'Client, contexte, acteurs'))}
+                  ${renderNavButton('stimuli', tt('Stimuli', 'Stimuli'), tt('Timeline & editing', 'Timeline & édition'))}
+                  ${renderNavButton('preview', tt('Preview', 'Prévisualisation'), tt('Fullscreen & export', 'Plein écran & export'))}
                 </div>
               </div>
 
               <div>
-                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">Outils globaux</div>
+                <div class="subtle" style="color: rgba(255,255,255,0.78); margin-bottom: 10px;">${tt('Global tools', 'Outils globaux')}</div>
                 <div class="toolbar-list">
-                  <button class="toolbar-button" data-action="new-scenario">Nouveau scénario <span>↺</span></button>
-                  <button class="toolbar-button" data-action="save-json">Sauvegarder JSON <span>⇩</span></button>
-                  <button class="toolbar-button" data-action="load-json">Charger JSON <span>⇧</span></button>
-                  <button class="toolbar-button" data-action="save-local">Sauvegarde locale <span>💾</span></button>
-                  <button class="toolbar-button" data-action="export-all">Export complet ZIP <span>🗜️</span></button>
+                  <button class="toolbar-button" data-action="new-scenario">${tt('New scenario', 'Nouveau scénario')} <span>↺</span></button>
+                  <button class="toolbar-button" data-action="save-json">${tt('Save JSON', 'Sauvegarder JSON')} <span>⇩</span></button>
+                  <button class="toolbar-button" data-action="load-json">${tt('Load JSON', 'Charger JSON')} <span>⇧</span></button>
+                  <button class="toolbar-button" data-action="save-local">${tt('Local save', 'Sauvegarde locale')} <span>💾</span></button>
+                  <button class="toolbar-button" data-action="export-all">${tt('Full ZIP export', 'Export complet ZIP')} <span>🗜️</span></button>
                 </div>
               </div>
 
               <div class="toolbar-note">
-                <strong>Confidentialité.</strong><br>
-                Votre clé API est stockée uniquement dans le navigateur (localStorage) et n’est envoyée qu’au fournisseur AI sélectionné lors des appels de génération.
+                <strong>${tt('Privacy.', 'Confidentialité.')}</strong><br>
+                ${tt('Your API key is stored only in the browser (localStorage) and is sent only to the selected AI provider during generation.', 'Votre clé API est stockée uniquement dans le navigateur (localStorage) et n’est envoyée qu’au fournisseur IA sélectionné lors des appels de génération.')}
               </div>
             </aside>
 
@@ -842,8 +893,8 @@
                 </div>
                 <div class="status-pills">
                   <span class="pill">${escapeHtml(appState.scenario.name)}</span>
-                  <span class="pill">${appState.scenario.stimuli.length} stimuli</span>
-                  <span class="pill">${appState.scenario.actors.length} acteurs</span>
+                  <span class="pill">${appState.scenario.stimuli.length} ${tt('stimuli', 'stimuli')}</span>
+                  <span class="pill">${appState.scenario.actors.length} ${tt('actors', 'acteurs')}</span>
                   <span class="pill">${renderProviderSummary(appState.scenario.settings)}</span>
                 </div>
               </section>
@@ -859,10 +910,22 @@
 
       function viewConfig() {
         const map = {
-          settings: { title: 'Paramètres IA', subtitle: 'Configurez votre fournisseur AI, la clé API et les préférences de génération.' },
-          scenario: { title: 'Scénario de crise', subtitle: 'Définissez le client, le contexte et les acteurs impliqués dans l’exercice.' },
-          stimuli: { title: 'Timeline & éditeur', subtitle: 'Créez des stimuli réalistes, générez leur contenu et ajustez le rendu en temps réel.' },
-          preview: { title: 'Prévisualisation plein écran', subtitle: 'Affichez, exportez et faites défiler les stimuli dans l’ordre de la timeline.' }
+          settings: {
+            title: tt('AI settings', 'Paramètres IA'),
+            subtitle: tt('Configure your AI provider, API key, and generation preferences.', 'Configurez votre fournisseur IA, la clé API et les préférences de génération.')
+          },
+          scenario: {
+            title: tt('Crisis scenario', 'Scénario de crise'),
+            subtitle: tt('Define the client, context, and actors involved in the exercise.', 'Définissez le client, le contexte et les acteurs impliqués dans l’exercice.')
+          },
+          stimuli: {
+            title: tt('Timeline & editor', 'Timeline & éditeur'),
+            subtitle: tt('Create realistic stimuli, generate their content, and adjust the rendering in real time.', 'Créez des stimuli réalistes, générez leur contenu et ajustez le rendu en temps réel.')
+          },
+          preview: {
+            title: tt('Fullscreen preview', 'Prévisualisation plein écran'),
+            subtitle: tt('Display, export, and browse stimuli in timeline order.', 'Affichez, exportez et faites défiler les stimuli dans l’ordre de la timeline.')
+          }
         };
         return map[appState.route];
       }
@@ -882,21 +945,21 @@
         return `
           <section class="grid cols-2">
             <article class="card">
-              <div class="section-header"><h3>Connexion AI</h3></div>
+              <div class="section-header"><h3>${tt('AI connection', 'Connexion IA')}</h3></div>
               <div class="field-grid cols-2">
-                <label class="field">Fournisseur AI
+                <label class="field">${tt('AI provider', 'Fournisseur IA')}
                   <select data-bind="settings.ai_provider">
                     <option value="anthropic" ${settings.ai_provider === 'anthropic' ? 'selected' : ''}>Anthropic</option>
                     <option value="azure_openai" ${settings.ai_provider === 'azure_openai' ? 'selected' : ''}>Azure OpenAI</option>
                   </select>
                 </label>
                 ${isAnthropic ? `
-                  <label class="field">Modèle
+                  <label class="field">${tt('Model', 'Modèle')}
                     <select data-bind="settings.ai_model">
                       ${models.map((model) => `<option value="${model}" ${settings.ai_model === model ? 'selected' : ''}>${model}</option>`).join('')}
                     </select>
                   </label>
-                  <label class="field" style="grid-column: 1 / -1;">Clé API Anthropic
+                  <label class="field" style="grid-column: 1 / -1;">${tt('Anthropic API key', 'Clé API Anthropic')}
                     <div style="display:flex; gap:10px;">
                       <input id="api-key-input" type="password" data-bind="settings.ai_api_key" value="${escapeAttribute(settings.ai_api_key)}" placeholder="sk-ant-...">
                       <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
@@ -904,33 +967,34 @@
                   </label>
                 ` : ''}
                 ${isAzure ? `
-                  <label class="field">Endpoint Azure
+                  <label class="field">${tt('Azure endpoint', 'Endpoint Azure')}
                     <input type="url" data-bind="settings.azure_endpoint" value="${escapeAttribute(settings.azure_endpoint || '')}" placeholder="https://<resource>.openai.azure.com/">
                   </label>
-                  <label class="field">Nom du déploiement
+                  <label class="field">${tt('Deployment name', 'Nom du déploiement')}
                     <input type="text" data-bind="settings.azure_deployment" value="${escapeAttribute(settings.azure_deployment || '')}" placeholder="gpt-4o">
                   </label>
-                  <label class="field" style="grid-column: 1 / -1;">Clé API Azure
+                  <label class="field" style="grid-column: 1 / -1;">${tt('Azure API key', 'Clé API Azure')}
                     <div style="display:flex; gap:10px;">
                       <input id="api-key-input" type="password" data-bind="settings.azure_api_key" value="${escapeAttribute(settings.azure_api_key || '')}" placeholder="Azure API key">
                       <button class="btn btn-secondary" data-action="toggle-api-key">👁️</button>
                     </div>
                   </label>
                 ` : ''}
-                <label class="field">Langue par défaut
+                <label class="field">${tt('Application language', 'Langue de l’application')}
                   <select data-bind="settings.language">
-                    ${['fr', 'en', 'de', 'es', 'it'].map((lang) => `<option value="${lang}" ${settings.language === lang ? 'selected' : ''}>${lang.toUpperCase()}</option>`).join('')}
+                    <option value="en" ${settings.language === 'en' ? 'selected' : ''}>English</option>
+                    <option value="fr" ${settings.language === 'fr' ? 'selected' : ''}>Français</option>
                   </select>
                 </label>
               </div>
               <div class="actions" style="margin-top:18px;">
-                <button class="btn btn-primary" data-action="test-connection">Tester la connexion</button>
-                <button class="btn btn-secondary" data-action="save-local">Sauvegarder localement</button>
+                <button class="btn btn-primary" data-action="test-connection">${tt('Test connection', 'Tester la connexion')}</button>
+                <button class="btn btn-secondary" data-action="save-local">${tt('Save locally', 'Sauvegarder localement')}</button>
               </div>
-              <p class="helper" style="margin-top:14px;">Les paramètres ${isAzure ? 'Azure OpenAI' : 'Anthropic'} sont stockés localement dans votre navigateur et transmis uniquement au fournisseur sélectionné.</p>
+              <p class="helper" style="margin-top:14px;">${tt(`The ${isAzure ? 'Azure OpenAI' : 'Anthropic'} settings stay in your browser and are only sent to the selected provider.`, `Les paramètres ${isAzure ? 'Azure OpenAI' : 'Anthropic'} restent dans votre navigateur et ne sont transmis qu’au fournisseur sélectionné.`)}</p>
             </article>
             <article class="card">
-              <div class="section-header"><h3>Modules implémentés</h3></div>
+              <div class="section-header"><h3>${tt('Included modules', 'Modules implémentés')}</h3></div>
               <div class="tag-row">
                 <span class="tag">ScenarioManager</span>
                 <span class="tag">StimulusEditor</span>
@@ -939,22 +1003,22 @@
                 <span class="tag">ExportEngine</span>
                 <span class="tag">UIRouter</span>
               </div>
-              <p class="subtle" style="margin-top:18px;">L’application fonctionne sans serveur et tient dans un seul fichier HTML. Les dépendances externes sont chargées via CDN pour l’export PNG et ZIP.</p>
+              <p class="subtle" style="margin-top:18px;">${tt('The application runs serverless in a single HTML file. External dependencies are loaded via CDN for PNG and ZIP exports.', 'L’application fonctionne sans serveur dans un seul fichier HTML. Les dépendances externes sont chargées via CDN pour les exports PNG et ZIP.')}</p>
               <div class="field-grid" style="margin-top:20px;">
                 <div class="card" style="padding:16px; background:var(--surface-alt); box-shadow:none;">
-                  <h4>Conseils de génération</h4>
+                  <h4>${tt('Generation tips', 'Conseils de génération')}</h4>
                   <ul class="helper">
-                    <li>Utilisez un résumé de scénario précis pour obtenir des stimuli cohérents.</li>
-                    <li>Renseignez plusieurs acteurs pour varier les points de vue.</li>
-                    <li>L’édition manuelle reste possible après génération sur chaque champ.</li>
+                    <li>${tt('Use a precise scenario summary to get consistent stimuli.', 'Utilisez un résumé de scénario précis pour obtenir des stimuli cohérents.')}</li>
+                    <li>${tt('Add multiple actors to vary perspectives.', 'Renseignez plusieurs acteurs pour varier les points de vue.')}</li>
+                    <li>${tt('Manual editing remains available after generation for every field.', 'L’édition manuelle reste possible après génération sur chaque champ.')}</li>
                   </ul>
                 </div>
                 <div class="card" style="padding:16px; background:var(--surface-alt); box-shadow:none;">
-                  <h4>Validation rapide</h4>
+                  <h4>${tt('Quick validation', 'Validation rapide')}</h4>
                   <ul class="helper">
-                    <li>Export PNG en haute résolution (pixelRatio 2).</li>
-                    <li>Auto-sauvegarde toutes les 30 secondes.</li>
-                    <li>Import / export complet du scénario en JSON.</li>
+                    <li>${tt('High-resolution PNG export (pixelRatio 2).', 'Export PNG en haute résolution (pixelRatio 2).')}</li>
+                    <li>${tt('Autosave every 30 seconds.', 'Auto-sauvegarde toutes les 30 secondes.')}</li>
+                    <li>${tt('Full scenario import/export in JSON.', 'Import / export complet du scénario en JSON.')}</li>
                   </ul>
                 </div>
               </div>
@@ -965,57 +1029,62 @@
 
       function renderScenarioView() {
         const scenario = appState.scenario;
+        const sectors = [
+          ['Banking', 'Banque'], ['Energy', 'Énergie'], ['Healthcare', 'Santé'], ['Transport', 'Transport'],
+          ['Industry', 'Industrie'], ['Telecom', 'Telecom'], ['Retail', 'Retail'], ['Public sector', 'Public'], ['Other', 'Autre']
+        ];
+        const types = [['Ransomware', 'Ransomware'], ['Data Breach', 'Data Breach'], ['Supply Chain', 'Supply Chain'], ['DDoS', 'DDoS'], ['Insider Threat', 'Insider Threat'], ['Other', 'Autre']];
         return `
           <section class="grid">
             <article class="card">
-              <div class="section-header"><h3>Client</h3></div>
+              <div class="section-header"><h3>${tt('Client', 'Client')}</h3></div>
               <div class="field-grid cols-2">
-                <label class="field">Nom du client<input type="text" data-bind="client.name" value="${escapeAttribute(scenario.client.name)}"></label>
-                <label class="field">Secteur
-                  <select data-bind="client.sector">${['Banque', 'Énergie', 'Santé', 'Transport', 'Industrie', 'Telecom', 'Retail', 'Public', 'Autre'].map((item) => `<option value="${item}" ${scenario.client.sector === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
+                <label class="field">${tt('Client name', 'Nom du client')}<input type="text" data-bind="client.name" value="${escapeAttribute(scenario.client.name)}"></label>
+                <label class="field">${tt('Sector', 'Secteur')}
+                  <select data-bind="client.sector">${sectors.map(([en, fr]) => `<option value="${en}" ${scenario.client.sector === en || scenario.client.sector === fr ? 'selected' : ''}>${tt(en, fr)}</option>`).join('')}</select>
                 </label>
-                <label class="field">Pays
+                <label class="field">${tt('Country', 'Pays')}
                   <select data-bind="client.country">${COUNTRIES.map((country) => `<option value="${country}" ${scenario.client.country === country ? 'selected' : ''}>${country}</option>`).join('')}</select>
                 </label>
-                <label class="field">Logo (URL ou data URI)<input type="url" data-bind="client.logo_url" value="${escapeAttribute(scenario.client.logo_url)}" placeholder="https://..."></label>
+                <label class="field">${tt('Logo (URL or data URI)', 'Logo (URL ou data URI)')}<input type="url" data-bind="client.logo_url" value="${escapeAttribute(scenario.client.logo_url)}" placeholder="https://..."></label>
               </div>
             </article>
 
             <article class="card">
-              <div class="section-header"><h3>Scénario</h3></div>
+              <div class="section-header"><h3>${tt('Scenario', 'Scénario')}</h3></div>
               <div class="field-grid cols-2">
-                <label class="field">Nom du scénario<input type="text" data-bind="name" value="${escapeAttribute(scenario.name)}"></label>
-                <label class="field">Type
-                  <select data-bind="scenario.type">${['Ransomware', 'Data Breach', 'Supply Chain', 'DDoS', 'Insider Threat', 'Autre'].map((item) => `<option value="${item}" ${scenario.scenario.type === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
+                <label class="field">${tt('Scenario name', 'Nom du scénario')}<input type="text" data-bind="name" value="${escapeAttribute(scenario.name)}"></label>
+                <label class="field">${tt('Type', 'Type')}
+                  <select data-bind="scenario.type">${types.map(([en, fr]) => `<option value="${en}" ${scenario.scenario.type === en || scenario.scenario.type === fr ? 'selected' : ''}>${tt(en, fr)}</option>`).join('')}</select>
                 </label>
-                <label class="field">Date de début<input type="datetime-local" data-bind="scenario.start_date" value="${escapeAttribute(scenario.scenario.start_date)}"></label>
-                <label class="field">Fuseau horaire
+                <label class="field">${tt('Start date', 'Date de début')}<input type="datetime-local" data-bind="scenario.start_date" value="${escapeAttribute(scenario.scenario.start_date)}"></label>
+                <label class="field">${tt('Timezone', 'Fuseau horaire')}
                   <select data-bind="scenario.timezone">${TIMEZONES.map((item) => `<option value="${item}" ${scenario.scenario.timezone === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
                 </label>
-                <label class="field" style="grid-column: 1 / -1;">Résumé du scénario<textarea data-bind="scenario.summary">${escapeHtml(scenario.scenario.summary)}</textarea></label>
+                <label class="field" style="grid-column: 1 / -1;">${tt('Scenario summary', 'Résumé du scénario')}<textarea data-bind="scenario.summary">${escapeHtml(scenario.scenario.summary)}</textarea></label>
               </div>
             </article>
 
             <article class="card">
               <div class="section-header">
                 <div>
-                  <h3>Acteurs simulés</h3>
-                  <p class="subtle">Acteurs disponibles pour signer ou émettre les stimuli.</p>
+                  <h3>${tt('Simulated actors', 'Acteurs simulés')}</h3>
+                  <p class="subtle">${tt('Actors available to sign or emit stimuli.', 'Acteurs disponibles pour signer ou émettre les stimuli.')}</p>
                 </div>
                 <div class="actions">
-                  <button class="btn btn-secondary" data-action="generate-sample-actors">Générer des acteurs types</button>
-                  <button class="btn btn-primary" data-action="add-actor">Ajouter un acteur</button>
+                  <button class="btn btn-secondary" data-action="generate-sample-actors">${tt('Generate sample actors', 'Générer des acteurs types')}</button>
+                  <button class="btn btn-primary" data-action="add-actor">${tt('Add actor', 'Ajouter un acteur')}</button>
                 </div>
               </div>
               <table class="table">
-                <thead><tr><th>Nom</th><th>Rôle</th><th>Organisation</th><th>Titre</th><th>Pays</th><th>Actions</th></tr></thead>
+                <thead><tr><th>${tt('Name', 'Nom')}</th><th>${tt('Role', 'Rôle')}</th><th>${tt('Organization', 'Organisation')}</th><th>${tt('Title', 'Titre')}</th><th>${tt('Country', 'Pays')}</th><th>${tt('Actions', 'Actions')}</th></tr></thead>
                 <tbody>
                   ${scenario.actors.map((actor) => `
                     <tr>
                       <td><input type="text" data-actor-bind="${actor.id}.name" value="${escapeAttribute(actor.name)}"></td>
                       <td>
                         <select data-actor-bind="${actor.id}.role">
-                          ${ROLES.map((role) => `<option value="${role.value}" ${actor.role === role.value ? 'selected' : ''}>${role.label}</option>`).join('')}
+                          ${ROLES.map((role) => `<option value="${role.value}" ${actor.role === role.value ? 'selected' : ''}>${escapeHtml(roleLabel(role.value))}</option>`).join('')}
                         </select>
                       </td>
                       <td><input type="text" data-actor-bind="${actor.id}.organization" value="${escapeAttribute(actor.organization)}"></td>
@@ -1027,8 +1096,8 @@
                       </td>
                       <td>
                         <div class="actions">
-                          <button class="btn btn-ghost" data-action="duplicate-actor" data-actor-id="${actor.id}">Dupliquer</button>
-                          <button class="btn btn-danger" data-action="delete-actor" data-actor-id="${actor.id}">Supprimer</button>
+                          <button class="btn btn-ghost" data-action="duplicate-actor" data-actor-id="${actor.id}">${tt('Duplicate', 'Dupliquer')}</button>
+                          <button class="btn btn-danger" data-action="delete-actor" data-actor-id="${actor.id}">${tt('Delete', 'Supprimer')}</button>
                         </div>
                       </td>
                     </tr>
@@ -1050,12 +1119,12 @@
             <article class="card">
               <div class="section-header">
                 <div>
-                  <h3>Timeline visuelle</h3>
-                  <p class="subtle">Axe horizontal en temps relatif, cartes colorées par canal, triées chronologiquement.</p>
+                  <h3>${tt('Visual timeline', 'Timeline visuelle')}</h3>
+                  <p class="subtle">${tt('Horizontal relative-time axis with color-coded cards sorted chronologically.', 'Axe horizontal en temps relatif, cartes colorées par canal, triées chronologiquement.')}</p>
                 </div>
                 <div class="actions">
-                  <button class="btn btn-primary" data-action="add-stimulus">+ Ajouter un stimulus</button>
-                  <button class="btn btn-secondary" data-action="sort-stimuli">Trier la timeline</button>
+                  <button class="btn btn-primary" data-action="add-stimulus">${tt('+ Add stimulus', '+ Ajouter un stimulus')}</button>
+                  <button class="btn btn-secondary" data-action="sort-stimuli">${tt('Sort timeline', 'Trier la timeline')}</button>
                 </div>
               </div>
               <div class="timeline">
@@ -1067,11 +1136,11 @@
             </article>
             <section class="editor-layout">
               <article class="card">
-                ${selected ? renderStimulusEditor(selected) : '<p class="subtle">Sélectionnez un stimulus pour l’éditer.</p>'}
+                ${selected ? renderStimulusEditor(selected) : `<p class="subtle">${tt('Select a stimulus to edit it.', 'Sélectionnez un stimulus pour l’éditer.')}</p>`}
               </article>
               <article class="preview-shell">
                 <div class="preview-stage">
-                  ${selected ? renderStimulusPreview(selected) : '<div class="subtle">La prévisualisation apparaîtra ici.</div>'}
+                  ${selected ? renderStimulusPreview(selected) : `<div class="subtle">${tt('The preview will appear here.', 'La prévisualisation apparaîtra ici.')}</div>`}
                 </div>
               </article>
             </section>
@@ -1086,10 +1155,10 @@
         const actor = getActor(stimulus.actor_id);
         return `
           <div class="stimulus-card ${appState.selectedStimulusId === stimulus.id ? 'selected' : ''}" data-action="select-stimulus" data-stimulus-id="${stimulus.id}" style="left:${left}px; top:${top}px; background:${meta.color};">
-            <strong>${escapeHtml(meta.label)}</strong>
-            <small>${escapeHtml(actor?.name || 'Sans acteur')}</small>
+            <strong>${escapeHtml(channelLabel(current.channel))}</strong>
+            <small>${escapeHtml(actor?.name || tt('No actor', 'Sans acteur'))}</small>
             <small>H+${Math.floor(stimulus.timestamp_offset_minutes / 60)}:${String(stimulus.timestamp_offset_minutes % 60).padStart(2, '0')}</small>
-            <small>Statut : ${escapeHtml(stimulus.status)}</small>
+            <small>${tt('Status', 'Statut')} : ${escapeHtml(stimulus.status)}</small>
           </div>
         `;
       }
@@ -1100,33 +1169,33 @@
         return `
           <div class="section-header">
             <div>
-              <h3>Éditeur de stimulus</h3>
-              <p class="subtle">${escapeHtml(CHANNEL_META[stimulus.channel].label)} · template <span class="mono">${escapeHtml(stimulus.template_id)}</span></p>
+              <h3>${tt('Stimulus editor', 'Éditeur de stimulus')}</h3>
+              <p class="subtle">${escapeHtml(channelLabel(stimulus.channel))} · ${tt('template', 'template')} <span class="mono">${escapeHtml(stimulus.template_id)}</span></p>
             </div>
             <div class="actions">
-              <button class="btn btn-secondary" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}">Dupliquer</button>
-              <button class="btn btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}">Supprimer</button>
+              <button class="btn btn-secondary" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}">${tt('Duplicate', 'Dupliquer')}</button>
+              <button class="btn btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}">${tt('Delete', 'Supprimer')}</button>
             </div>
           </div>
 
           <div class="field-grid cols-2">
-            <label class="field">Canal
-              <select data-stimulus-bind="${stimulus.id}.channel">${Object.entries(CHANNEL_META).map(([channel, meta]) => `<option value="${channel}" ${stimulus.channel === channel ? 'selected' : ''}>${meta.label}</option>`).join('')}</select>
+            <label class="field">${tt('Channel', 'Canal')}
+              <select data-stimulus-bind="${stimulus.id}.channel">${Object.entries(CHANNEL_META).map(([channel]) => `<option value="${channel}" ${stimulus.channel === channel ? 'selected' : ''}>${channelLabel(channel)}</option>`).join('')}</select>
             </label>
-            <label class="field">Acteur émetteur
+            <label class="field">${tt('Source actor', 'Acteur émetteur')}
               <select data-stimulus-bind="${stimulus.id}.actor_id">${actorOptions}</select>
             </label>
-            <label class="field">Timeline (minutes)
+            <label class="field">${tt('Timeline (minutes)', 'Timeline (minutes)')}
               <input type="number" min="0" step="5" data-stimulus-bind="${stimulus.id}.timestamp_offset_minutes" value="${stimulus.timestamp_offset_minutes}">
             </label>
-            <label class="field">Statut
+            <label class="field">${tt('Status', 'Statut')}
               <select data-stimulus-bind="${stimulus.id}.status">${['draft', 'ready', 'sent'].map((value) => `<option value="${value}" ${stimulus.status === value ? 'selected' : ''}>${value}</option>`).join('')}</select>
             </label>
           </div>
 
           <div class="actions" style="margin:18px 0 16px;">
-            <button class="btn btn-primary" data-action="generate-stimulus" data-stimulus-id="${stimulus.id}">Tout générer</button>
-            <button class="btn btn-success" data-action="export-png" data-stimulus-id="${stimulus.id}">Exporter PNG</button>
+            <button class="btn btn-primary" data-action="generate-stimulus" data-stimulus-id="${stimulus.id}">${tt('Generate all', 'Tout générer')}</button>
+            <button class="btn btn-success" data-action="export-png" data-stimulus-id="${stimulus.id}">${tt('Export PNG', 'Exporter PNG')}</button>
           </div>
 
           <div class="field-grid">
@@ -1143,7 +1212,7 @@
           return `
             <label class="field">${escapeHtml(spec.label)}
               <textarea ${bind}>${escapeHtml(content)}</textarea>
-              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ ${tt('Generate this field', 'Générer ce champ')}</button></div>
             </label>
           `;
         }
@@ -1153,21 +1222,21 @@
               <select ${bind}>
                 ${(spec.options || []).map((option) => `<option value="${option}" ${String(value) === String(option) ? 'selected' : ''}>${option}</option>`).join('')}
               </select>
-              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+              <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ ${tt('Generate this field', 'Générer ce champ')}</button></div>
             </label>
           `;
         }
         if (spec.type === 'checkbox') {
           return `
             <label class="field">${escapeHtml(spec.label)}
-              <select ${bind}><option value="true" ${value ? 'selected' : ''}>Oui</option><option value="false" ${!value ? 'selected' : ''}>Non</option></select>
+              <select ${bind}><option value="true" ${value ? 'selected' : ''}>${tt('Yes', 'Oui')}</option><option value="false" ${!value ? 'selected' : ''}>${tt('No', 'Non')}</option></select>
             </label>
           `;
         }
         return `
           <label class="field">${escapeHtml(spec.label)}
             <input type="${spec.type}" ${bind} value="${escapeAttribute(value ?? '')}">
-            <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ Générer ce champ</button></div>
+            <div class="actions"><button class="btn btn-ghost" data-action="generate-field" data-stimulus-id="${stimulus.id}" data-field-name="${spec.key}">✨ ${tt('Generate this field', 'Générer ce champ')}</button></div>
           </label>
         `;
       }
@@ -1175,38 +1244,37 @@
       function renderPreviewView() {
         const stimuli = getSortedStimuli();
         if (!stimuli.length) {
-          return '<article class="card"><p class="subtle">Aucun stimulus à prévisualiser.</p></article>';
+          return `<article class="card"><p class="subtle">${tt('No stimulus to preview.', 'Aucun stimulus à prévisualiser.')}</p></article>`;
         }
         const index = Math.min(appState.slideshowIndex, stimuli.length - 1);
         const current = stimuli[index];
-        const meta = CHANNEL_META[current.channel];
         return `
           <section class="grid">
             <article class="preview-toolbar">
               <div>
-                <strong>${escapeHtml(meta.label)}</strong>
-                <div class="subtle">${escapeHtml(getActor(current.actor_id)?.name || 'Sans acteur')} · H+${Math.floor(current.timestamp_offset_minutes / 60)}:${String(current.timestamp_offset_minutes % 60).padStart(2, '0')}</div>
+                <strong>${escapeHtml(channelLabel(current.channel))}</strong>
+                <div class="subtle">${escapeHtml(getActor(current.actor_id)?.name || tt('No actor', 'Sans acteur'))} · H+${Math.floor(current.timestamp_offset_minutes / 60)}:${String(current.timestamp_offset_minutes % 60).padStart(2, '0')}</div>
               </div>
               <div class="actions">
-                <button class="btn btn-secondary" data-action="preview-prev">← Précédent</button>
-                <button class="btn btn-secondary" data-action="preview-next">Suivant →</button>
-                <button class="btn btn-primary" data-action="goto-stimuli" data-stimulus-id="${current.id}">Éditer</button>
-                <button class="btn btn-success" data-action="export-png" data-stimulus-id="${current.id}">Exporter PNG</button>
+                <button class="btn btn-secondary" data-action="preview-prev">← ${tt('Previous', 'Précédent')}</button>
+                <button class="btn btn-secondary" data-action="preview-next">${tt('Next', 'Suivant')} →</button>
+                <button class="btn btn-primary" data-action="goto-stimuli" data-stimulus-id="${current.id}">${tt('Edit', 'Éditer')}</button>
+                <button class="btn btn-success" data-action="export-png" data-stimulus-id="${current.id}">${tt('Export PNG', 'Exporter PNG')}</button>
               </div>
             </article>
             <article class="preview-shell">
               <div class="preview-stage">${renderStimulusPreview(current, 'fullscreen-preview')}</div>
             </article>
             <article class="card">
-              <div class="section-header"><h3>Diaporama de stimuli</h3></div>
+              <div class="section-header"><h3>${tt('Stimulus slideshow', 'Diaporama de stimuli')}</h3></div>
               <div class="thumb-grid">
                 ${stimuli.map((stimulus, idx) => `
                   <div class="thumb-card">
                     <div class="thumb-preview">${renderStimulusPreview(stimulus, '', true)}</div>
                     <div class="thumb-body">
-                      <strong>${escapeHtml(CHANNEL_META[stimulus.channel].label)}</strong>
-                      <p class="subtle">${escapeHtml(getActor(stimulus.actor_id)?.name || 'Sans acteur')} · H+${Math.floor(stimulus.timestamp_offset_minutes / 60)}:${String(stimulus.timestamp_offset_minutes % 60).padStart(2, '0')}</p>
-                      <button class="btn btn-secondary" data-action="preview-select" data-index="${idx}">Afficher</button>
+                      <strong>${escapeHtml(channelLabel(stimulus.channel))}</strong>
+                      <p class="subtle">${escapeHtml(getActor(stimulus.actor_id)?.name || tt('No actor', 'Sans acteur'))} · H+${Math.floor(stimulus.timestamp_offset_minutes / 60)}:${String(stimulus.timestamp_offset_minutes % 60).padStart(2, '0')}</p>
+                      <button class="btn btn-secondary" data-action="preview-select" data-index="${idx}">${tt('Show', 'Afficher')}</button>
                     </div>
                   </div>
                 `).join('')}
@@ -1234,7 +1302,7 @@
             case 'email_authority': return this.authority(f);
             case 'press_release': return this.pressRelease(f);
             case 'sms_notification': return this.sms(f);
-            default: return `<div class="card">Template non implémenté pour ${escapeHtml(stimulus.channel)}.</div>`;
+            default: return `<div class="card">${tt('Template not implemented for', 'Template non implémenté pour')} ${escapeHtml(stimulus.channel)}.</div>`;
           }
         },
         emailInternal(f) {
@@ -1242,15 +1310,15 @@
             <div class="outlook-email">
               <div class="outlook-topbar">
                 <strong>Outlook</strong>
-                <div class="outlook-actions">${iconReply()} Répondre ${iconReplyAll()} Répondre à tous ${iconForward()} Transférer</div>
+                <div class="outlook-actions">${iconReply()} ${tt('Reply', 'Répondre')} ${iconReplyAll()} ${tt('Reply all', 'Répondre à tous')} ${iconForward()} ${tt('Forward', 'Transférer')}</div>
               </div>
               <div class="outlook-body">
                 <div class="outlook-meta">
                   <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">${f.importance === 'high' ? '<span class="importance-dot">!</span>' : ''}<div class="outlook-subject">${escapeHtml(f.subject || '')}</div></div>
-                  <div class="outlook-row"><span>De</span><strong>${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;</strong></div>
-                  <div class="outlook-row"><span>À</span><span>${escapeHtml(f.to || '')}</span></div>
+                  <div class="outlook-row"><span>${tt('From', 'De')}</span><strong>${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;</strong></div>
+                  <div class="outlook-row"><span>${tt('To', 'À')}</span><span>${escapeHtml(f.to || '')}</span></div>
                   <div class="outlook-row"><span>Cc</span><span>${escapeHtml(f.cc || '')}</span></div>
-                  <div class="outlook-row"><span>Date</span><span>${escapeHtml(f.date || '')}</span></div>
+                  <div class="outlook-row"><span>${tt('Date', 'Date')}</span><span>${escapeHtml(f.date || '')}</span></div>
                 </div>
                 <div class="outlook-content">
                   ${f.body || ''}
@@ -1265,9 +1333,9 @@
             <article class="press-article">
               <div class="lm-header">
                 <div class="lm-logo">Le Monde</div>
-                <div class="lm-nav"><span>Politique</span><span>International</span><span>Économie</span><span>Pixels</span><span>Culture</span><span>Opinions</span></div>
+                <div class="lm-nav"><span>${tt('Politics', 'Politique')}</span><span>${tt('World', 'International')}</span><span>${tt('Business', 'Économie')}</span><span>Pixels</span><span>${tt('Culture', 'Culture')}</span><span>${tt('Opinions', 'Opinions')}</span></div>
               </div>
-              ${f.is_premium ? '<div class="lm-premium">Réservé aux abonnés — lecture intégrale</div>' : ''}
+              ${f.is_premium ? `<div class="lm-premium">${tt('Subscribers only — full article', 'Réservé aux abonnés — lecture intégrale')}</div>` : ''}
               <div class="press-body">
                 <div class="press-category">${escapeHtml(f.category || '')}</div>
                 <h1 class="press-headline">${escapeHtml(f.headline || '')}</h1>
@@ -1324,10 +1392,10 @@
                   <div class="li-date">${escapeHtml(f.date || '')} · 🌐</div>
                 </div>
               </div>
-              <div class="li-text">${escapeHtml(trimmed)}${showMore ? '<div class="li-see-more">…voir plus</div>' : ''}</div>
-              <div class="li-stats"><span>${reactions}</span><span>${formatMetric(f.reactions_count)} réactions · ${formatMetric(f.comments_count)} commentaires · ${formatMetric(f.reposts_count)} republications</span></div>
+              <div class="li-text">${escapeHtml(trimmed)}${showMore ? `<div class="li-see-more">${tt('…see more', '…voir plus')}</div>` : ''}</div>
+              <div class="li-stats"><span>${reactions}</span><span>${formatMetric(f.reactions_count)} ${tt('reactions', 'réactions')} · ${formatMetric(f.comments_count)} ${tt('comments', 'commentaires')} · ${formatMetric(f.reposts_count)} ${tt('reposts', 'republications')}</span></div>
               <div class="li-divider"></div>
-              <div class="li-actions"><strong>J’aime</strong><strong>Commenter</strong><strong>Republier</strong><strong>Envoyer</strong></div>
+              <div class="li-actions"><strong>${tt('Like', 'J’aime')}</strong><strong>${tt('Comment', 'Commenter')}</strong><strong>${tt('Repost', 'Republier')}</strong><strong>${tt('Send', 'Envoyer')}</strong></div>
             </article>
           `;
         },
@@ -1362,14 +1430,14 @@
                     <div class="rf-logo"></div>
                     <div>
                       <strong>ANSSI · CERT-FR</strong><br>
-                      <span class="subtle">Alerte officielle cybersécurité</span>
+                      <span class="subtle">${tt('Official cybersecurity alert', 'Alerte officielle cybersécurité')}</span>
                     </div>
                   </div>
                   <div class="mono">${escapeHtml(f.reference || '')}</div>
                 </div>
                 <div class="authority-content">
-                  <div class="authority-banner"><strong>Sévérité : ${escapeHtml(f.severity || '')}</strong> · Diffusion restreinte au destinataire</div>
-                  <p><strong>De :</strong> ${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;<br><strong>À :</strong> ${escapeHtml(f.to || '')}<br><strong>Date :</strong> ${escapeHtml(f.date || '')}</p>
+                  <div class="authority-banner"><strong>${tt('Severity', 'Sévérité')} : ${escapeHtml(f.severity || '')}</strong> · ${tt('Restricted distribution to recipient', 'Diffusion restreinte au destinataire')}</div>
+                  <p><strong>${tt('From', 'De')} :</strong> ${escapeHtml(f.from_name || '')} &lt;${escapeHtml(f.from_email || '')}&gt;<br><strong>${tt('To', 'À')} :</strong> ${escapeHtml(f.to || '')}<br><strong>${tt('Date', 'Date')} :</strong> ${escapeHtml(f.date || '')}</p>
                   <h2 style="margin-top:0;">${escapeHtml(f.subject || '')}</h2>
                   <div>${f.body || ''}</div>
                 </div>
@@ -1385,7 +1453,7 @@
               <div class="pr-title">${escapeHtml(f.title || '')}</div>
               <div class="pr-body">${f.body || ''}</div>
               <div class="pr-contact">
-                <strong>Contact presse</strong><br>
+                <strong>${tt('Press contact', 'Contact presse')}</strong><br>
                 ${escapeHtml(f.contact_name || '')}<br>
                 ${escapeHtml(f.contact_email || '')}<br>
                 ${escapeHtml(f.contact_phone || '')}
@@ -1401,7 +1469,7 @@
                 <div style="display:flex; justify-content:flex-start;">
                   <div>
                     <div class="sms-bubble">${escapeHtml(f.text || '')}</div>
-                    <div class="sms-time">Aujourd’hui ${escapeHtml(f.time || '')}</div>
+                    <div class="sms-time">${tt('Today', 'Aujourd’hui')} ${escapeHtml(f.time || '')}</div>
                   </div>
                 </div>
               </div>
@@ -1413,11 +1481,11 @@
       const AITextGenerator = {
         async testConnection() {
           const { ai_provider, ai_api_key, azure_endpoint, azure_api_key, azure_deployment } = appState.scenario.settings;
-          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error('Veuillez saisir une clé API Anthropic avant de tester la connexion.');
+          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error(tt('Please enter an Anthropic API key before testing the connection.', 'Veuillez saisir une clé API Anthropic avant de tester la connexion.'));
           if (ai_provider === 'azure_openai') {
-            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error('Veuillez renseigner l’endpoint, la clé API et le déploiement Azure avant de tester la connexion.');
+            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error(tt('Please provide the Azure endpoint, API key, and deployment name before testing the connection.', 'Veuillez renseigner l’endpoint, la clé API et le déploiement Azure avant de tester la connexion.'));
           }
-          const prompt = 'Réponds uniquement avec un objet JSON {"ok": true, "message": "connexion valide"}';
+          const prompt = 'Reply only with a JSON object {"ok": true, "message": "valid connection"}';
           return this.generate('settings_test', prompt, null, true);
         },
         async generateForStimulus(stimulus, fieldName = null) {
@@ -1427,39 +1495,39 @@
         },
         async generate(channel, systemPrompt, userPrompt = null, quiet = false) {
           const { ai_provider, ai_api_key, ai_model, azure_endpoint, azure_api_key, azure_deployment } = appState.scenario.settings;
-          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error('Clé API Anthropic manquante.');
+          if (ai_provider === 'anthropic' && !ai_api_key) throw new Error(tt('Missing Anthropic API key.', 'Clé API Anthropic manquante.'));
           if (ai_provider === 'azure_openai') {
-            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error('Configuration Azure OpenAI incomplète.');
+            if (!azure_endpoint || !azure_api_key || !azure_deployment) throw new Error(tt('Incomplete Azure OpenAI configuration.', 'Configuration Azure OpenAI incomplète.'));
             const normalizedEndpoint = azure_endpoint.replace(/\/+$/, '');
             const response = await fetch(`${normalizedEndpoint}/openai/deployments/${encodeURIComponent(azure_deployment)}/chat/completions?api-version=2024-02-01`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'api-key': azure_api_key },
-              body: JSON.stringify({ temperature: 0.8, messages: [{ role: 'system', content: systemPrompt }, ...(userPrompt ? [{ role: 'user', content: userPrompt }] : [{ role: 'user', content: 'Réponds en JSON strict.' }])] })
+              body: JSON.stringify({ temperature: 0.8, messages: [{ role: 'system', content: systemPrompt }, ...(userPrompt ? [{ role: 'user', content: userPrompt }] : [{ role: 'user', content: 'Reply in strict JSON.' }])] })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error?.message || 'Erreur API Azure OpenAI');
             const content = data.choices?.[0]?.message?.content;
-            if (!content) throw new Error('Réponse Azure OpenAI vide.');
+            if (!content) throw new Error(tt('Empty Azure OpenAI response.', 'Réponse Azure OpenAI vide.'));
             const parsed = JSON.parse(content);
-            if (!quiet) pushToast('Contenu généré avec Azure OpenAI.', 'success');
+            if (!quiet) pushToast(tt('Content generated with Azure OpenAI.', 'Contenu généré avec Azure OpenAI.'), 'success');
             return parsed;
           }
           if (ai_provider === 'anthropic') {
             const response = await fetch('https://api.anthropic.com/v1/messages', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'x-api-key': ai_api_key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-              body: JSON.stringify({ model: ai_model, max_tokens: 2000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt || 'Réponds en JSON strict.' }] })
+              body: JSON.stringify({ model: ai_model, max_tokens: 2000, system: systemPrompt, messages: [{ role: 'user', content: userPrompt || 'Reply in strict JSON.' }] })
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error?.message || 'Erreur API Anthropic');
             const text = data.content?.[0]?.text || '{}';
             const match = text.match(/\{[\s\S]*\}/);
-            if (!match) throw new Error('Réponse Anthropic non JSON.');
+            if (!match) throw new Error(tt('Anthropic response was not valid JSON.', 'Réponse Anthropic non JSON.'));
             const parsed = JSON.parse(match[0]);
-            if (!quiet) pushToast('Contenu généré avec Anthropic.', 'success');
+            if (!quiet) pushToast(tt('Content generated with Anthropic.', 'Contenu généré avec Anthropic.'), 'success');
             return parsed;
           }
-          throw new Error(`Fournisseur non supporté : ${ai_provider}`);
+          throw new Error(tt(`Unsupported provider: ${ai_provider}`, `Fournisseur non supporté : ${ai_provider}`));
         }
       };
 
@@ -1468,47 +1536,47 @@
           const common = {
             scenarioSummary: scenario.scenario.summary,
             timestamp: `H+${stimulus.timestamp_offset_minutes} minutes`,
-            actorName: actor?.name || 'Porte-parole',
-            actorTitle: actor?.title || 'Responsable',
+            actorName: actor?.name || 'Spokesperson',
+            actorTitle: actor?.title || 'Lead',
             actorRole: actor?.role || 'internal',
-            language: scenario.settings.language || 'fr'
+            language: scenario.settings.language === 'fr' ? 'French' : 'English'
           };
-          const eventDescription = stimulus.fields.subject || stimulus.fields.headline || stimulus.fields.text || stimulus.fields.title || 'Nouveau développement dans la crise cyber';
+          const eventDescription = stimulus.fields.subject || stimulus.fields.headline || stimulus.fields.text || stimulus.fields.title || 'New development in the cyber crisis';
           switch (stimulus.channel) {
             case 'article_press':
               return {
-                systemPrompt: `Tu es un journaliste spécialisé en cybersécurité pour Le Monde (FR). Tu rédiges un article factuel sur un incident de sécurité informatique. Contexte du scénario : ${common.scenarioSummary}. Événement à couvrir : ${eventDescription}. Moment dans la timeline : ${common.timestamp}. Consignes : titre accrocheur mais factuel, chapô de 2 phrases, corps de 3-4 paragraphes HTML avec <p>, citation fictive, langue ${common.language}, ne jamais mentionner qu'il s'agit d'un exercice. Réponds uniquement avec un objet JSON contenant headline, subheadline, body, image_caption.`,
-                userPrompt: fieldName ? `Génère uniquement la meilleure valeur pour le champ ${fieldName}, mais réponds quand même en JSON avec toutes les clés attendues.` : 'Rédige l’article complet.'
+                systemPrompt: `You are a cybersecurity journalist writing a factual press article about an information security incident. Scenario context: ${common.scenarioSummary}. Event to cover: ${eventDescription}. Timeline point: ${common.timestamp}. Instructions: engaging but factual headline, 2-sentence standfirst, 3-4 HTML paragraphs with <p>, one fictional quote, write in ${common.language}, never mention that this is an exercise. Reply only with JSON containing headline, subheadline, body, image_caption.`,
+                userPrompt: fieldName ? `Generate the best possible value for field ${fieldName}, but still answer with JSON containing all expected keys.` : 'Write the full article.'
               };
             case 'post_twitter':
               return {
-                systemPrompt: `Tu es ${common.actorName}, ${common.actorTitle}. Tu réagis sur X/Twitter à un événement de cybersécurité. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Ton personnage : ${common.actorRole}. Consignes : maximum 280 caractères, style authentique, peut inclure 1-2 hashtags, langue ${common.language}. Réponds uniquement avec un objet JSON {"text":"..."}.`,
-                userPrompt: fieldName ? `Optimise le champ ${fieldName}.` : 'Génère un tweet crédible.'
+                systemPrompt: `You are ${common.actorName}, ${common.actorTitle}. You are reacting on X/Twitter to a cybersecurity event. Context: ${common.scenarioSummary}. Event: ${eventDescription}. Character role: ${common.actorRole}. Instructions: maximum 280 characters, authentic tone, may include 1-2 hashtags, write in ${common.language}. Reply only with JSON {"text":"..."}.`,
+                userPrompt: fieldName ? `Improve field ${fieldName}.` : 'Generate a credible post.'
               };
             case 'post_linkedin':
               return {
-                systemPrompt: `Tu es ${common.actorName}, ${common.actorTitle}. Tu publies sur LinkedIn à propos d'un événement de cybersécurité. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Consignes : 500-1000 caractères, ton professionnel mais engagé, structure accroche + analyse + perspective, hashtags sobres, langue ${common.language}. Réponds uniquement avec JSON {"text":"..."}.`,
-                userPrompt: 'Rédige le post LinkedIn.'
+                systemPrompt: `You are ${common.actorName}, ${common.actorTitle}. You are posting on LinkedIn about a cybersecurity event. Context: ${common.scenarioSummary}. Event: ${eventDescription}. Instructions: 500-1000 characters, professional but engaged tone, structure hook + analysis + perspective, restrained hashtags, write in ${common.language}. Reply only with JSON {"text":"..."}.`,
+                userPrompt: 'Write the LinkedIn post.'
               };
             case 'email_internal':
               return {
-                systemPrompt: `Tu rédiges un email interne dans le contexte d'une crise cyber. Expéditeur : ${stimulus.fields.from_name || common.actorName}. Destinataire : ${stimulus.fields.to || 'Comité de crise'}. Contexte : ${common.scenarioSummary}. Objectif du mail : point de situation et consignes. Moment : ${common.timestamp}. Consignes : objet clair, corps structuré avec HTML <p>, <ul>, <strong>, langue ${common.language}. Réponds uniquement avec JSON {"subject":"...","body":"..."}.`,
-                userPrompt: 'Rédige un email structuré et crédible.'
+                systemPrompt: `Write an internal email during a cyber crisis. Sender: ${stimulus.fields.from_name || common.actorName}. Recipient: ${stimulus.fields.to || 'Crisis Committee'}. Context: ${common.scenarioSummary}. Goal: status update and instructions. Time: ${common.timestamp}. Instructions: clear subject line, structured HTML body using <p>, <ul>, <strong>, write in ${common.language}. Reply only with JSON {"subject":"...","body":"..."}.`,
+                userPrompt: 'Write a structured and credible internal email.'
               };
             case 'email_authority':
               return {
-                systemPrompt: `Tu rédiges une alerte officielle du CERT-FR (FR). Contexte : ${common.scenarioSummary}. Type d'alerte : vulnérabilité critique exploitée. Sévérité : ${stimulus.fields.severity || 'high'}. Consignes : ton institutionnel, précis, technique, structure résumé / systèmes affectés / recommandations / indicateurs de compromission, langue ${common.language}. Réponds uniquement avec JSON {"reference":"...","subject":"...","body":"..."}.`,
-                userPrompt: 'Rédige une alerte officielle.'
+                systemPrompt: `Write an official CERT-FR alert. Context: ${common.scenarioSummary}. Alert type: critical vulnerability actively exploited. Severity: ${stimulus.fields.severity || 'high'}. Instructions: institutional, precise, technical tone, structure as summary / affected systems / recommendations / indicators of compromise, write in ${common.language}. Reply only with JSON {"reference":"...","subject":"...","body":"..."}.`,
+                userPrompt: 'Write the official alert.'
               };
             case 'press_release':
               return {
-                systemPrompt: `Tu rédiges un communiqué de presse officiel pour ${stimulus.fields.organization || scenario.client.name}. Contexte : ${common.scenarioSummary}. Moment : ${common.timestamp}. Position : première réaction. Consignes : ton corporate, rassurant mais transparent, structure date/lieu, titre, contexte, mesures, engagement, contact presse, langue ${common.language}. Réponds uniquement avec JSON {"title":"...","body":"..."}.`,
-                userPrompt: 'Rédige le communiqué.'
+                systemPrompt: `Write an official press release for ${stimulus.fields.organization || scenario.client.name}. Context: ${common.scenarioSummary}. Time: ${common.timestamp}. Positioning: first reaction. Instructions: corporate, reassuring but transparent tone, include date/location, title, context, measures, commitments, and press contact, write in ${common.language}. Reply only with JSON {"title":"...","body":"..."}.`,
+                userPrompt: 'Write the press release.'
               };
             default:
               return {
-                systemPrompt: `Tu aides à créer un stimulus cyber réaliste. Contexte : ${common.scenarioSummary}. Événement : ${eventDescription}. Réponds uniquement avec un objet JSON cohérent avec le canal ${stimulus.channel}.`,
-                userPrompt: fieldName ? `Génère une valeur crédible pour ${fieldName}.` : 'Génère le contenu complet.'
+                systemPrompt: `Help create a realistic cyber-crisis stimulus. Context: ${common.scenarioSummary}. Event: ${eventDescription}. Reply only with JSON consistent with channel ${stimulus.channel}.`,
+                userPrompt: fieldName ? `Generate a credible value for ${fieldName}.` : 'Generate the full content.'
               };
           }
         }
@@ -1517,15 +1585,15 @@
       const ExportEngine = {
         async exportStimulus(stimulus) {
           const element = document.getElementById(`render-${stimulus.id}`) || document.getElementById('fullscreen-preview');
-          if (!element) throw new Error('Aucun rendu disponible à exporter.');
+          if (!element) throw new Error(tt('No rendered stimulus is available to export.', 'Aucun rendu disponible à exporter.'));
           const dataUrl = await htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
           this.downloadDataUrl(dataUrl, this.filenameForStimulus(stimulus));
-          pushToast('Stimulus exporté en PNG.', 'success');
+          pushToast(tt('Stimulus exported as PNG.', 'Stimulus exporté en PNG.'), 'success');
         },
         async exportAll() {
           const zip = new JSZip();
           const stimuli = getSortedStimuli();
-          if (!stimuli.length) throw new Error('Aucun stimulus à exporter.');
+          if (!stimuli.length) throw new Error(tt('No stimulus to export.', 'Aucun stimulus à exporter.'));
           const sandbox = document.createElement('div');
           sandbox.style.position = 'fixed';
           sandbox.style.left = '-99999px';
@@ -1540,7 +1608,7 @@
           document.body.removeChild(sandbox);
           const blob = await zip.generateAsync({ type: 'blob' });
           downloadBlob(blob, `crisisstim_${slugify(appState.scenario.name)}_exports.zip`);
-          pushToast('Archive ZIP générée.', 'success');
+          pushToast(tt('ZIP archive generated.', 'Archive ZIP générée.'), 'success');
         },
         filenameForStimulus(stimulus) {
           const actor = getActor(stimulus.actor_id);
@@ -1636,7 +1704,7 @@
               appState.scenario = defaultScenario();
               appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
               App.render();
-              pushToast('Nouveau scénario initialisé.', 'success');
+              pushToast(tt('New scenario initialized.', 'Nouveau scénario initialisé.'), 'success');
               break;
             }
             case 'save-json': saveScenarioToFile(); break;
@@ -1644,7 +1712,7 @@
             case 'export-all': await ExportEngine.exportAll(); break;
             case 'test-connection': {
               await AITextGenerator.testConnection();
-              pushToast('Connexion AI validée.', 'success');
+              pushToast(tt('AI connection validated.', 'Connexion IA validée.'), 'success');
               break;
             }
             case 'add-actor': addActor(); break;
@@ -1663,7 +1731,7 @@
             case 'preview-next': appState.slideshowIndex = Math.min(getSortedStimuli().length - 1, appState.slideshowIndex + 1); App.render(); break;
             case 'goto-stimuli': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; appState.route = 'stimuli'; App.render(); break;
             case 'preview-select': appState.slideshowIndex = Number(event.currentTarget.dataset.index); App.render(); break;
-            default: console.warn('Action non gérée', action);
+            default: console.warn(tt('Unhandled action', 'Action non gérée'), action);
           }
         } catch (error) {
           console.error(error);
@@ -1672,19 +1740,19 @@
       }
 
       function addActor() {
-        appState.scenario.actors.push({ id: uid('actor'), name: 'Nouvel acteur', role: 'internal', organization: appState.scenario.client.name, title: 'Titre / fonction', country: appState.scenario.client.country, avatar_initials: 'NA', avatar_url: '' });
+        appState.scenario.actors.push({ id: uid('actor'), name: tt('New actor', 'Nouvel acteur'), role: 'internal', organization: appState.scenario.client.name, title: tt('Title / role', 'Titre / fonction'), country: appState.scenario.client.country, avatar_initials: 'NA', avatar_url: '' });
         App.render();
       }
 
       function duplicateActor(actorId) {
         const actor = getActor(actorId);
         if (!actor) return;
-        appState.scenario.actors.push({ ...deepClone(actor), id: uid('actor'), name: `${actor.name} (copie)` });
+        appState.scenario.actors.push({ ...deepClone(actor), id: uid('actor'), name: `${actor.name} ${tt('(copy)', '(copie)')}` });
         App.render();
       }
 
       function deleteActor(actorId) {
-        if (appState.scenario.actors.length === 1) throw new Error('Au moins un acteur est requis.');
+        if (appState.scenario.actors.length === 1) throw new Error(tt('At least one actor is required.', 'Au moins un acteur est requis.'));
         appState.scenario.actors = appState.scenario.actors.filter((actor) => actor.id !== actorId);
         appState.scenario.stimuli.forEach((stimulus) => {
           if (stimulus.actor_id === actorId) stimulus.actor_id = appState.scenario.actors[0].id;
@@ -1695,13 +1763,13 @@
       function generateSampleActors() {
         const clientName = appState.scenario.client.name || 'Client';
         const additions = [
-          { name: 'Sophie Laurent', role: 'journalist', organization: 'Les Échos', title: 'Journaliste cyber', country: 'FR' },
-          { name: 'Marc Rivière', role: 'analyst', organization: 'Cabinet Delta', title: 'Analyste menace', country: 'FR' },
-          { name: 'Nora Benali', role: 'partner', organization: 'Prestataire cloud', title: 'Responsable relation client', country: 'FR' }
+          { name: 'Sophie Laurent', role: 'journalist', organization: 'Les Echos', title: 'Cyber reporter', country: 'FR' },
+          { name: 'Marc Riviere', role: 'analyst', organization: 'Delta Advisory', title: 'Threat analyst', country: 'FR' },
+          { name: 'Nora Benali', role: 'partner', organization: 'Cloud provider', title: 'Client relationship lead', country: 'FR' }
         ];
         additions.forEach((item) => appState.scenario.actors.push({ id: uid('actor'), avatar_initials: initialsFromName(item.name), avatar_url: '', ...item, organization: item.organization.replace('Client', clientName) }));
         App.render();
-        pushToast('Acteurs types ajoutés.', 'success');
+        pushToast(tt('Sample actors added.', 'Acteurs types ajoutés.'), 'success');
       }
 
       function addStimulus() {
@@ -1736,7 +1804,7 @@
       async function generateStimulus(stimulusId, fieldName = null) {
         const stimulus = getStimulus(stimulusId);
         if (!stimulus) return;
-        pushToast('Génération en cours…', 'success');
+        pushToast(tt('Generation in progress…', 'Génération en cours…'), 'success');
         const generated = await AITextGenerator.generateForStimulus(stimulus, fieldName);
         Object.entries(generated).forEach(([key, value]) => {
           if (!fieldName || fieldName === key) stimulus.fields[key] = value;
@@ -1773,7 +1841,7 @@
         const json = JSON.stringify(appState.scenario, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         downloadBlob(blob, `crisisstim_${slugify(appState.scenario.name)}_${new Date().toISOString().slice(0, 10)}.json`);
-        pushToast('Scénario exporté en JSON.', 'success');
+        pushToast(tt('Scenario exported as JSON.', 'Scénario exporté en JSON.'), 'success');
       }
 
       function loadScenarioFromFile() {
@@ -1789,9 +1857,9 @@
               appState.scenario = mergeScenario(JSON.parse(loadEvent.target.result));
               appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
               App.render();
-              pushToast('Scénario chargé avec succès.', 'success');
+              pushToast(tt('Scenario loaded successfully.', 'Scénario chargé avec succès.'), 'success');
             } catch (error) {
-              pushToast(`Fichier JSON invalide : ${error.message}`, 'error');
+              pushToast(tt(`Invalid JSON file: ${error.message}`, `Fichier JSON invalide : ${error.message}`), 'error');
             }
           };
           reader.readAsText(file);
@@ -1823,9 +1891,9 @@
 
       function renderProviderSummary(settings) {
         if (settings.ai_provider === 'azure_openai') {
-          return `Azure OpenAI / ${escapeHtml(settings.azure_deployment || 'déploiement non défini')}`;
+          return `Azure OpenAI / ${escapeHtml(settings.azure_deployment || tt('deployment not set', 'déploiement non défini'))}`;
         }
-        return `Anthropic / ${escapeHtml(settings.ai_model || 'modèle non défini')}`;
+        return `Anthropic / ${escapeHtml(settings.ai_model || tt('model not set', 'modèle non défini'))}`;
       }
 
       function setByPath(target, path, value) {
