@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CrisisStim - Stimulus Generator</title>
+  <title>CrisisStim by Wavestone - Stimulus Generator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,19 +11,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Georgia&family=Lora:wght@400;700&family=Source+Sans+3:wght@400;600;700&family=Noto+Sans:wght@400;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f8f9fa;
+      --bg: #f6f8ff;
       --surface: #ffffff;
-      --surface-alt: #eef2f6;
-      --surface-dark: #132238;
-      --text: #1a1a1a;
-      --muted: #5f6b7a;
-      --border: #d7dde5;
-      --primary: #1e3a5f;
-      --primary-strong: #10243f;
-      --accent: #e74c3c;
-      --success: #2e8b57;
+      --surface-alt: #eef3ff;
+      --surface-dark: #112457;
+      --text: #182033;
+      --muted: #61708f;
+      --border: #d8e0f3;
+      --primary: #2850f0;
+      --primary-strong: #112457;
+      --accent: #35c38f;
+      --success: #1f9f73;
       --warning: #d48c00;
-      --shadow: 0 20px 45px rgba(20, 35, 58, 0.08);
+      --shadow: 0 20px 45px rgba(17, 36, 87, 0.10);
       --radius: 16px;
       --radius-sm: 10px;
       --ui-font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -34,7 +34,7 @@
     body {
       margin: 0;
       font-family: var(--ui-font);
-      background: linear-gradient(180deg, #eef3f8 0%, var(--bg) 180px);
+      background: linear-gradient(180deg, #edf2ff 0%, var(--bg) 220px);
       color: var(--text);
     }
 
@@ -49,7 +49,7 @@
     }
 
     .sidebar {
-      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+      background: linear-gradient(200deg, var(--primary) 0%, var(--primary-strong) 72%, #0b1740 100%);
       color: #fff;
       padding: 28px 22px;
       display: flex;
@@ -65,6 +65,18 @@
       font-size: 1.8rem;
       font-weight: 800;
       letter-spacing: -0.04em;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .brand-signature {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(136, 255, 214, 0.92);
     }
 
     .brand p {
@@ -118,9 +130,9 @@
       justify-content: space-between;
       align-items: center;
       gap: 16px;
-      background: rgba(255,255,255,0.72);
+      background: rgba(255,255,255,0.8);
       backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.65);
+      border: 1px solid rgba(40, 80, 240, 0.08);
       box-shadow: var(--shadow);
       border-radius: var(--radius);
       padding: 18px 22px;
@@ -148,7 +160,7 @@
 
     .card {
       background: var(--surface);
-      border: 1px solid rgba(19, 34, 56, 0.07);
+      border: 1px solid rgba(17, 36, 87, 0.08);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 22px;
@@ -201,8 +213,8 @@
     textarea { min-height: 120px; resize: vertical; }
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: rgba(30,58,95,0.55);
-      box-shadow: 0 0 0 4px rgba(30,58,95,0.12);
+      border-color: rgba(40,80,240,0.5);
+      box-shadow: 0 0 0 4px rgba(40,80,240,0.14);
     }
 
     .actions { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -217,10 +229,10 @@
       transition: 0.2s ease;
     }
     .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, #486dff 100%); color: #fff; box-shadow: 0 10px 24px rgba(40, 80, 240, 0.22); }
     .btn-secondary { background: var(--surface-alt); color: var(--primary-strong); border: 1px solid var(--border); }
-    .btn-danger { background: var(--accent); color: #fff; }
-    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: linear-gradient(135deg, #34c38f 0%, #1ea678 100%); color: #fff; }
+    .btn-success { background: linear-gradient(135deg, var(--success) 0%, #36bf8e 100%); color: #fff; }
     .btn-ghost { background: transparent; border: 1px dashed var(--border); color: var(--muted); }
 
     .helper { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
@@ -665,7 +677,7 @@
       function setDocumentLanguage() {
         const lang = currentLanguage();
         document.documentElement.lang = lang;
-        document.title = tt('CrisisStim - Stimulus Generator', 'CrisisStim - Générateur de stimuli');
+        document.title = tt('CrisisStim by Wavestone - Stimulus Generator', 'CrisisStim by Wavestone - Générateur de stimuli');
       }
 
       function roleLabel(value) {
@@ -854,7 +866,7 @@
           <div class="app-shell">
             <aside class="sidebar">
               <div class="brand">
-                <h1>CrisisStim</h1>
+                <h1>CrisisStim <span class="brand-signature">by Wavestone</span></h1>
                 <p>${tt('Standalone stimulus generator for cyber crisis exercises, delivered as a single serverless HTML file.', 'Générateur autonome de stimuli pour exercices de crise cyber, dans un seul fichier HTML sans serveur.')}</p>
               </div>
 
