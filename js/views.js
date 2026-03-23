@@ -582,11 +582,14 @@
       function renderStimuliView() {
         const selected = getSelectedStimulus();
         const maxOffset = Math.max(360, ...appState.scenario.stimuli.map((item) => item.timestamp_offset_minutes));
-        const width = Math.max(980, (Math.ceil(maxOffset / 60) + 1) * 120 + 120);
+        const hourWidth = 108;
+        const width = Math.max(900, (Math.ceil(maxOffset / 60) + 1) * hourWidth + 120);
         const ticks = Array.from({ length: Math.ceil(maxOffset / 60) + 2 }, (_, index) => index);
+        const editorWidth = appState.ui?.stimuliEditorWidth || 42;
+        const timelineHeight = appState.ui?.stimuliTimelineHeight || 255;
         return `
-          <section class="grid">
-            <article class="card">
+          <section class="stimuli-workspace" data-stimuli-workspace style="--stimuli-editor-width:${editorWidth}%; --stimuli-preview-width:${100 - editorWidth}%; --stimuli-timeline-height:${timelineHeight}px;">
+            <article class="card stimuli-timeline-panel">
               <div class="section-header">
                 <h3>${tt('Timeline', 'Timeline')}</h3>
                 <div class="actions">
@@ -596,20 +599,22 @@
               </div>
               <div class="timeline">
                 <div class="timeline-track" style="width:${width}px;">
-                  ${ticks.map((tick) => `<div class="timeline-tick" style="left:${tick * 120}px;">H+${tick}</div>`).join('')}
-                  ${appState.scenario.stimuli.map((stimulus, index) => renderStimulusCard(stimulus, index)).join('')}
+                  ${ticks.map((tick) => `<div class="timeline-tick" style="left:${tick * hourWidth}px;">H+${tick}</div>`).join('')}
+                  ${appState.scenario.stimuli.map((stimulus, index) => renderStimulusCard(stimulus, index, hourWidth)).join('')}
                 </div>
               </div>
             </article>
+            <div class="resize-handle resize-handle-horizontal" data-resize-handle="timeline-height" role="separator" aria-orientation="horizontal" aria-label="${tt('Resize timeline', 'Redimensionner la timeline')}"></div>
             <section class="stimuli-split">
               <article class="stimuli-left-panel card">
                 ${selected ? renderStimulusEditor(selected) : `<p class="subtle" style="padding:20px;">${tt('Select a stimulus from the timeline to edit it.', 'Sélectionnez un stimulus dans la timeline pour l\'éditer.')}</p>`}
               </article>
+              <div class="resize-handle resize-handle-vertical" data-resize-handle="editor-width" role="separator" aria-orientation="vertical" aria-label="${tt('Resize editor and preview', 'Redimensionner l\'éditeur et la prévisualisation')}"></div>
               <article class="stimuli-right-panel">
                 <div class="preview-toolbar-inline">
                   ${selected ? `<button class="btn btn-secondary" data-action="export-png" data-stimulus-id="${selected.id}">${tt('Export PNG', 'Exporter PNG')}</button>` : ''}
                 </div>
-                <div class="preview-shell" style="margin:0; border-radius:0; border:none; min-height:calc(100% - 48px);">
+                <div class="preview-shell stimuli-preview-shell" style="margin:0; border-radius:0; border:none; min-height:calc(100% - 44px);">
                   <div class="preview-stage">
                     ${selected ? renderStimulusPreview(selected) : `<div class="subtle" style="padding:40px;">${tt('Select a stimulus to preview it.', 'Sélectionnez un stimulus pour le prévisualiser.')}</div>`}
                   </div>
@@ -620,9 +625,9 @@
         `;
       }
 
-      function renderStimulusCard(stimulus, index) {
+      function renderStimulusCard(stimulus, index, hourWidth = 108) {
         const meta = CHANNEL_META[stimulus.channel] || CHANNEL_META.email_internal;
-        const left = (stimulus.timestamp_offset_minutes / 60) * 120;
+        const left = (stimulus.timestamp_offset_minutes / 60) * hourWidth;
         const top = 24 + (index % 3) * 58;
         const actor = getActor(stimulus.actor_id);
         return `
