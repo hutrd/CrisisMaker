@@ -7,6 +7,10 @@
         toasts: [],
         libraryFilter: { channel: '', status: '', actorId: '', sort: 'timeline' },
         historyModalStimulusId: null,
+        ui: {
+          stimuliTimelineHeight: 255,
+          stimuliEditorWidth: 42
+        },
         llmState: {
           scenario: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 },
           actors:   { text: '', collapsed: false, loading: false, error: null, pendingActors: null },
@@ -32,6 +36,7 @@
           setDocumentLanguage();
           root.innerHTML = renderAppShell();
           bindGlobalEvents();
+          bindStimuliSplitters();
           renderToasts();
         }
       };
@@ -208,6 +213,7 @@
             case 'generate-stimulus': await generateStimulus(event.currentTarget.dataset.stimulusId); break;
             case 'generate-field': await generateStimulus(event.currentTarget.dataset.stimulusId, event.currentTarget.dataset.fieldName); break;
             case 'export-png': await ExportEngine.exportStimulus(getStimulus(event.currentTarget.dataset.stimulusId)); break;
+            case 'export-msg': await ExportEngine.exportRawEmail(getStimulus(event.currentTarget.dataset.stimulusId)); break;
             case 'preview-prev': appState.slideshowIndex = Math.max(0, appState.slideshowIndex - 1); App.render(); break;
             case 'preview-next': appState.slideshowIndex = Math.min(getSortedStimuli().length - 1, appState.slideshowIndex + 1); App.render(); break;
             case 'goto-stimuli': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; appState.route = 'stimuli'; App.render(); break;
@@ -529,6 +535,47 @@
         let ref = target;
         parts.forEach((part) => { ref = ref[part]; });
         ref[last] = value;
+      }
+
+      function bindStimuliSplitters() {
+        const workspace = document.querySelector('[data-stimuli-workspace]');
+        if (!workspace) return;
+        const timelineHandle = workspace.querySelector('[data-resize-handle="timeline-height"]');
+        const panelHandle = workspace.querySelector('[data-resize-handle="editor-width"]');
+        if (timelineHandle) timelineHandle.addEventListener('pointerdown', (event) => startStimuliResize(event, 'timeline-height', workspace));
+        if (panelHandle) panelHandle.addEventListener('pointerdown', (event) => startStimuliResize(event, 'editor-width', workspace));
+      }
+
+      function startStimuliResize(event, type, workspace) {
+        if (!workspace) return;
+        event.preventDefault();
+        const bounds = workspace.getBoundingClientRect();
+        const pointerId = event.pointerId;
+        const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+        const onMove = (moveEvent) => {
+          if (type === 'timeline-height') {
+            const height = clamp(moveEvent.clientY - bounds.top, 190, Math.max(190, bounds.height - 260));
+            appState.ui.stimuliTimelineHeight = Math.round(height);
+          } else {
+            const widthPercent = ((moveEvent.clientX - bounds.left) / bounds.width) * 100;
+            appState.ui.stimuliEditorWidth = Math.round(clamp(widthPercent, 28, 72));
+          }
+          workspace.style.setProperty('--stimuli-timeline-height', `${appState.ui.stimuliTimelineHeight}px`);
+          workspace.style.setProperty('--stimuli-editor-width', `${appState.ui.stimuliEditorWidth}%`);
+          workspace.style.setProperty('--stimuli-preview-width', `${100 - appState.ui.stimuliEditorWidth}%`);
+        };
+        const stop = () => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', stop);
+          window.removeEventListener('pointercancel', stop);
+          if (workspace.hasPointerCapture?.(pointerId)) workspace.releasePointerCapture(pointerId);
+          document.body.classList.remove('is-resizing-panels');
+        };
+        document.body.classList.add('is-resizing-panels');
+        if (workspace.setPointerCapture) workspace.setPointerCapture(pointerId);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', stop);
+        window.addEventListener('pointercancel', stop);
       }
 
       function initialsFromName(name) {

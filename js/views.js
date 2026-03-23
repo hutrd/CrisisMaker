@@ -362,6 +362,7 @@
               <div class="library-card-actions">
                 <button class="btn btn-xs" data-action="edit-in-stimuli" data-stimulus-id="${stimulus.id}" title="${tt('Edit', 'Éditer')}">✏️</button>
                 <button class="btn btn-xs" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}" title="${tt('Duplicate', 'Dupliquer')}">⧉</button>
+                ${String(stimulus.channel || '').startsWith('email_') ? `<button class="btn btn-xs" data-action="export-msg" data-stimulus-id="${stimulus.id}" title="${tt('Export .msg file', 'Exporter le fichier .msg')}">✉️</button>` : ''}
                 <button class="btn btn-xs" data-action="export-png" data-stimulus-id="${stimulus.id}" title="${tt('Export PNG', 'Exporter PNG')}">⤓</button>
                 <button class="btn btn-xs btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}" title="${tt('Delete', 'Supprimer')}">✕</button>
               </div>
@@ -588,24 +589,14 @@
       function renderStimuliView() {
         const selected = getSelectedStimulus();
         const maxOffset = Math.max(360, ...appState.scenario.stimuli.map((item) => item.timestamp_offset_minutes));
-        const width = Math.max(980, (Math.ceil(maxOffset / 60) + 1) * 120 + 120);
+        const hourWidth = 108;
+        const width = Math.max(900, (Math.ceil(maxOffset / 60) + 1) * hourWidth + 120);
         const ticks = Array.from({ length: Math.ceil(maxOffset / 60) + 2 }, (_, index) => index);
+        const editorWidth = appState.ui?.stimuliEditorWidth || 42;
+        const timelineHeight = appState.ui?.stimuliTimelineHeight || 255;
         return `
-          <section class="grid">
-            ${renderLLMConfigBlock('stimuli_batch', tt(
-              'Ex: "Create 30 stimuli: 3 from international press, 2 from authorities, 20 internal emails, and 5 external emails from client and regulator."',
-              'Ex : "Crée 30 stimuli : 3 articles de presse internationale, 2 messages d’autorité, 20 emails internes et 5 emails externes de clients et du régulateur."'
-            ), {
-              title: tt('Generate a batch with LLM', 'Générer un lot avec le LLM'),
-              subtitle: tt(
-                'Describe the batch you want and the LLM will add every requested stimulus to the timeline in one go.',
-                'Décrivez le lot souhaité et le LLM ajoutera tous les stimuli demandés à la timeline en une seule fois.'
-              ),
-              generateLabel: tt('Generate batch ✨', 'Générer le lot ✨'),
-              loadingLabel: tt('Generating batch…', 'Génération du lot…'),
-              successMessage: (count) => tt(`${count} stimulus/stimuli generated and added to the timeline.`, `${count} stimulus généré(s) et ajouté(s) à la timeline.`)
-            })}
-            <article class="card">
+          <section class="stimuli-workspace" data-stimuli-workspace style="--stimuli-editor-width:${editorWidth}%; --stimuli-preview-width:${100 - editorWidth}%; --stimuli-timeline-height:${timelineHeight}px;">
+            <article class="card stimuli-timeline-panel">
               <div class="section-header">
                 <h3>${tt('Timeline', 'Timeline')}</h3>
                 <div class="actions">
@@ -615,20 +606,23 @@
               </div>
               <div class="timeline">
                 <div class="timeline-track" style="width:${width}px;">
-                  ${ticks.map((tick) => `<div class="timeline-tick" style="left:${tick * 120}px;">H+${tick}</div>`).join('')}
-                  ${appState.scenario.stimuli.map((stimulus, index) => renderStimulusCard(stimulus, index)).join('')}
+                  ${ticks.map((tick) => `<div class="timeline-tick" style="left:${tick * hourWidth}px;">H+${tick}</div>`).join('')}
+                  ${appState.scenario.stimuli.map((stimulus, index) => renderStimulusCard(stimulus, index, hourWidth)).join('')}
                 </div>
               </div>
             </article>
+            <div class="resize-handle resize-handle-horizontal" data-resize-handle="timeline-height" role="separator" aria-orientation="horizontal" aria-label="${tt('Resize timeline', 'Redimensionner la timeline')}"></div>
             <section class="stimuli-split">
               <article class="stimuli-left-panel card">
                 ${selected ? renderStimulusEditor(selected) : `<p class="subtle" style="padding:20px;">${tt('Select a stimulus from the timeline to edit it.', 'Sélectionnez un stimulus dans la timeline pour l\'éditer.')}</p>`}
               </article>
+              <div class="resize-handle resize-handle-vertical" data-resize-handle="editor-width" role="separator" aria-orientation="vertical" aria-label="${tt('Resize editor and preview', 'Redimensionner l\'éditeur et la prévisualisation')}"></div>
               <article class="stimuli-right-panel">
                 <div class="preview-toolbar-inline">
+                  ${selected && String(selected.channel || '').startsWith('email_') ? `<button class="btn btn-secondary" data-action="export-msg" data-stimulus-id="${selected.id}">${tt('Export .msg file', 'Exporter le fichier .msg')}</button>` : ''}
                   ${selected ? `<button class="btn btn-secondary" data-action="export-png" data-stimulus-id="${selected.id}">${tt('Export PNG', 'Exporter PNG')}</button>` : ''}
                 </div>
-                <div class="preview-shell" style="margin:0; border-radius:0; border:none; min-height:calc(100% - 48px);">
+                <div class="preview-shell stimuli-preview-shell" style="margin:0; border-radius:0; border:none; min-height:calc(100% - 44px);">
                   <div class="preview-stage">
                     ${selected ? renderStimulusPreview(selected) : `<div class="subtle" style="padding:40px;">${tt('Select a stimulus to preview it.', 'Sélectionnez un stimulus pour le prévisualiser.')}</div>`}
                   </div>
@@ -639,9 +633,9 @@
         `;
       }
 
-      function renderStimulusCard(stimulus, index) {
+      function renderStimulusCard(stimulus, index, hourWidth = 108) {
         const meta = CHANNEL_META[stimulus.channel] || CHANNEL_META.email_internal;
-        const left = (stimulus.timestamp_offset_minutes / 60) * 120;
+        const left = (stimulus.timestamp_offset_minutes / 60) * hourWidth;
         const top = 24 + (index % 3) * 58;
         const actor = getActor(stimulus.actor_id);
         return `
@@ -711,6 +705,7 @@
 
           <div class="actions" style="margin:14px 0 12px;">
             ${stimulus.generation_mode !== 'manual' ? `<button class="btn btn-primary" data-action="generate-stimulus" data-stimulus-id="${stimulus.id}">${stimulus.generation_mode === 'ai_guided' ? tt('Generate from description', 'Générer depuis la description') : tt('Generate all', 'Tout générer')}</button>` : ''}
+            ${String(stimulus.channel || '').startsWith('email_') ? `<button class="btn btn-secondary" data-action="export-msg" data-stimulus-id="${stimulus.id}">${tt('Export .msg file', 'Exporter le fichier .msg')}</button>` : ''}
             <button class="btn btn-secondary" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}">${tt('Duplicate', 'Dupliquer')}</button>
             <button class="btn btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}">${tt('Delete', 'Supprimer')}</button>
           </div>
@@ -778,6 +773,7 @@
                 <button class="btn btn-secondary" data-action="preview-prev">← ${tt('Previous', 'Précédent')}</button>
                 <button class="btn btn-secondary" data-action="preview-next">${tt('Next', 'Suivant')} →</button>
                 <button class="btn btn-primary" data-action="goto-stimuli" data-stimulus-id="${current.id}">${tt('Edit', 'Éditer')}</button>
+                ${String(current.channel || '').startsWith('email_') ? `<button class="btn btn-secondary" data-action="export-msg" data-stimulus-id="${current.id}">${tt('Export .msg file', 'Exporter le fichier .msg')}</button>` : ''}
                 <button class="btn btn-success" data-action="export-png" data-stimulus-id="${current.id}">${tt('Export PNG', 'Exporter PNG')}</button>
               </div>
             </article>
