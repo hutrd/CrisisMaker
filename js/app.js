@@ -161,7 +161,7 @@
       }
 
       function addActor() {
-        appState.scenario.actors.push({ id: uid('actor'), name: tt('New actor', 'Nouvel acteur'), role: 'internal', organization: appState.scenario.client.name, title: tt('Title / role', 'Titre / fonction'), country: appState.scenario.client.country, avatar_initials: 'NA', avatar_url: '' });
+        appState.scenario.actors.push({ id: uid('actor'), name: tt('New actor', 'Nouvel acteur'), role: 'internal', organization: appState.scenario.client.name, title: tt('Title / role', 'Titre / fonction'), language: appState.scenario.client.language || 'en', avatar_initials: 'NA', avatar_url: '' });
         App.render();
       }
 

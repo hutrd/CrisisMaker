@@ -61,18 +61,18 @@
 
       function defaultScenario() {
         const actors = [
-          { id: uid('actor'), name: 'John Carter', role: 'journalist', organization: 'Global Daily', title: 'Cybersecurity reporter', country: 'US', avatar_initials: 'JC', avatar_url: '' },
-          { id: uid('actor'), name: 'Claire Martin', role: 'internal', organization: 'Group X', title: 'Cyber crisis director', country: 'FR', avatar_initials: 'CM', avatar_url: '' },
-          { id: uid('actor'), name: 'CERT-FR', role: 'authority', organization: 'ANSSI', title: 'Government cyber alert and response center', country: 'FR', avatar_initials: 'CF', avatar_url: '' }
+          { id: uid('actor'), name: 'John Carter', role: 'journalist', organization: 'Global Daily', title: 'Cybersecurity reporter', language: 'en', avatar_initials: 'JC', avatar_url: '' },
+          { id: uid('actor'), name: 'Claire Martin', role: 'internal', organization: 'Group X', title: 'Cyber crisis director', language: 'fr', avatar_initials: 'CM', avatar_url: '' },
+          { id: uid('actor'), name: 'CERT-FR', role: 'authority', organization: 'ANSSI', title: 'Government cyber alert and response center', language: 'fr', avatar_initials: 'CF', avatar_url: '' }
         ];
         const scenario = {
           id: uid('scenario'),
           name: 'Ransomware exercise - ClientX',
-          client: { name: 'Client X', sector: 'Banking', country: 'US', logo_url: '' },
-          scenario: { type: 'Ransomware', summary: 'A ransomware attack hits the information system of a large listed company. Critical operations are disrupted, the press starts reporting the incident, and authorities are alerted.', start_date: '2026-03-15T08:00', timezone: 'America/New_York' },
+          client: { name: 'Client X', sector: 'Banking', language: 'en', logo_url: '' },
+          scenario: { type: 'Ransomware', summary: 'A ransomware attack hits the information system of a large listed company. Critical operations are disrupted, the press starts reporting the incident, and authorities are alerted.', detailed_context: '', start_date: '2026-03-15T08:00', timezone: 'America/New_York' },
           actors,
           stimuli: [],
-          settings: { language: 'en', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '' }
+          settings: { language: 'en', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '', max_versions: 3, auto_save_interval_seconds: 30 }
         };
         const samples = [
           makeStimulus('email_internal', actors[1].id, 0),
@@ -92,16 +92,23 @@
         const template = channel === 'article_press'
           ? (ARTICLE_TEMPLATE_LIBRARY[templateId] || ARTICLE_TEMPLATE_LIBRARY[TEMPLATE_LIBRARY.article_press.template_id] || ARTICLE_TEMPLATE_LIBRARY.nyt)
           : (TEMPLATE_LIBRARY[channel] || TEMPLATE_LIBRARY.email_internal);
+        const now = new Date().toISOString();
         return {
           id: uid('stimulus'),
           timestamp_offset_minutes: offsetMinutes,
           channel,
           template_id: template.template_id,
           actor_id: actorId,
+          source_label: '',
+          generation_mode: 'ai',
+          generation_prompt: '',
           status: 'draft',
+          created_at: now,
+          updated_at: now,
           fields: deepClone(template.defaults),
           generated_text: {},
-          manual_overrides: {}
+          manual_overrides: {},
+          history: []
         };
       }
 
@@ -112,7 +119,7 @@
         let scenario = defaultScenario();
         if (saved) {
           try {
-            scenario = mergeScenario(JSON.parse(saved));
+            scenario = mergeScenario(migrateScenario(JSON.parse(saved)));
           } catch (error) {
             console.warn(tt('Unable to restore the saved scenario.', 'Impossible de restaurer le scénario sauvegardé.'), error);
           }
@@ -145,17 +152,70 @@
         const channel = stimulus.channel || 'email_internal';
         const templateId = channel === 'article_press' ? (stimulus.template_id || 'nyt') : (stimulus.template_id || (TEMPLATE_LIBRARY[channel] || TEMPLATE_LIBRARY.email_internal).template_id);
         const library = getTemplateDefinition({ channel, template_id: templateId }) || TEMPLATE_LIBRARY.email_internal;
+        const now = new Date().toISOString();
         return {
           id: stimulus.id || uid('stimulus'),
           timestamp_offset_minutes: Number(stimulus.timestamp_offset_minutes || 0),
           channel,
           template_id: templateId,
           actor_id: stimulus.actor_id || appState?.scenario?.actors?.[0]?.id || '',
+          source_label: stimulus.source_label || '',
+          generation_mode: stimulus.generation_mode || 'ai',
+          generation_prompt: stimulus.generation_prompt || '',
           status: stimulus.status || 'draft',
+          created_at: stimulus.created_at || now,
+          updated_at: stimulus.updated_at || now,
           fields: { ...deepClone(library.defaults), ...(stimulus.fields || {}) },
           generated_text: stimulus.generated_text || {},
-          manual_overrides: stimulus.manual_overrides || {}
+          manual_overrides: stimulus.manual_overrides || {},
+          history: stimulus.history || []
         };
+      }
+
+      function migrateScenario(raw) {
+        if (!raw) return raw;
+        // country → language on client
+        if (raw.client && raw.client.country && !raw.client.language) {
+          const map = { FR: 'fr', BE: 'fr', CH: 'fr', CA: 'fr', US: 'en', GB: 'en', DE: 'de', ES: 'es', IT: 'it', PT: 'pt', NL: 'nl' };
+          raw.client.language = map[raw.client.country] || 'en';
+        }
+        // country → language on actors
+        if (Array.isArray(raw.actors)) {
+          raw.actors = raw.actors.map((actor) => {
+            if (actor.country && !actor.language) {
+              const map = { FR: 'fr', BE: 'fr', CH: 'fr', CA: 'fr', US: 'en', GB: 'en', DE: 'de', ES: 'es', IT: 'it', PT: 'pt', NL: 'nl' };
+              actor.language = map[actor.country] || 'en';
+            }
+            return actor;
+          });
+        }
+        // Add missing scenario fields
+        if (raw.scenario && raw.scenario.detailed_context === undefined) raw.scenario.detailed_context = '';
+        // Add missing settings fields
+        if (raw.settings) {
+          if (!raw.settings.max_versions) raw.settings.max_versions = 3;
+          if (!raw.settings.auto_save_interval_seconds) raw.settings.auto_save_interval_seconds = 30;
+        }
+        return raw;
+      }
+
+      function saveStimulus(stimulus, newFields, changeSummary) {
+        if (!stimulus.history) stimulus.history = [];
+        const maxVersions = appState?.scenario?.settings?.max_versions || 3;
+        stimulus.history.unshift({
+          fields: deepClone(stimulus.fields),
+          saved_at: new Date().toISOString(),
+          change_summary: changeSummary || tt('Manual edit', 'Modification manuelle')
+        });
+        if (stimulus.history.length > maxVersions) stimulus.history = stimulus.history.slice(0, maxVersions);
+        stimulus.fields = deepClone(newFields);
+        stimulus.updated_at = new Date().toISOString();
+      }
+
+      function restoreVersion(stimulus, versionIndex) {
+        const version = stimulus.history[versionIndex];
+        if (!version) return;
+        saveStimulus(stimulus, version.fields, tt(`Restore version from ${new Date(version.saved_at).toLocaleDateString()}`, `Restauration de la version du ${new Date(version.saved_at).toLocaleDateString()}`));
       }
 
       function getTemplateDefinition(stimulus) {

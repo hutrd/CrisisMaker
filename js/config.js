@@ -23,7 +23,12 @@
         { value: 'attacker', label: 'Attacker' },
         { value: 'analyst', label: 'Analyst' }
       ];
-      const COUNTRIES = ['FR', 'US', 'GB', 'DE', 'ES', 'IT', 'BE', 'CH', 'CA'];
+      const LANGUAGES = [
+        { value: 'fr', label: 'Français' }, { value: 'en', label: 'English' },
+        { value: 'de', label: 'Deutsch' }, { value: 'es', label: 'Español' },
+        { value: 'it', label: 'Italiano' }, { value: 'pt', label: 'Português' },
+        { value: 'nl', label: 'Nederlands' }, { value: 'ja', label: '日本語' }, { value: 'zh', label: '中文' }
+      ];
       const TIMEZONES = ['Europe/Paris', 'UTC', 'Europe/London', 'America/New_York'];
       const CHANNEL_META = {
         email_internal: { label: 'Internal email', color: '#2563eb', category: 'Email' },
