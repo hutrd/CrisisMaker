@@ -287,6 +287,7 @@
           ['Industry', 'Industrie'], ['Telecom', 'Telecom'], ['Retail', 'Retail'], ['Public sector', 'Public'], ['Other', 'Autre']
         ];
         const types = [['Ransomware', 'Ransomware'], ['Data Breach', 'Data Breach'], ['Supply Chain', 'Supply Chain'], ['DDoS', 'DDoS'], ['Insider Threat', 'Insider Threat'], ['Other', 'Autre']];
+        const langOptions = LANGUAGES.map((l) => `<option value="${l.value}" ${(scenario.client.language || 'en') === l.value ? 'selected' : ''}>${l.label}</option>`).join('');
         return `
           <section class="grid">
             <article class="card">
@@ -296,15 +297,15 @@
                 <label class="field">${tt('Sector', 'Secteur')}
                   <select data-bind="client.sector">${sectors.map(([en, fr]) => `<option value="${en}" ${scenario.client.sector === en || scenario.client.sector === fr ? 'selected' : ''}>${tt(en, fr)}</option>`).join('')}</select>
                 </label>
-                <label class="field">${tt('Country', 'Pays')}
-                  <select data-bind="client.country">${COUNTRIES.map((country) => `<option value="${country}" ${scenario.client.country === country ? 'selected' : ''}>${country}</option>`).join('')}</select>
+                <label class="field">${tt('Primary language', 'Langue principale')}
+                  <select data-bind="client.language">${langOptions}</select>
                 </label>
-                <label class="field">${tt('Logo (URL or data URI)', 'Logo (URL ou data URI)')}<input type="url" data-bind="client.logo_url" value="${escapeAttribute(scenario.client.logo_url)}" placeholder="https://..."></label>
+                <label class="field">${tt('Logo (URL or data URI)', 'Logo (URL ou data URI)')}<input type="url" data-bind="client.logo_url" value="${escapeAttribute(scenario.client.logo_url || '')}" placeholder="https://..."></label>
               </div>
             </article>
 
             <article class="card">
-              <div class="section-header"><h3>${tt('Scenario', 'Scénario')}</h3></div>
+              <div class="section-header"><h3>${tt('Scenario / Threat', 'Scénario / Menace')}</h3></div>
               <div class="field-grid cols-2">
                 <label class="field">${tt('Scenario name', 'Nom du scénario')}<input type="text" data-bind="name" value="${escapeAttribute(scenario.name)}"></label>
                 <label class="field">${tt('Type', 'Type')}
@@ -314,7 +315,13 @@
                 <label class="field">${tt('Timezone', 'Fuseau horaire')}
                   <select data-bind="scenario.timezone">${TIMEZONES.map((item) => `<option value="${item}" ${scenario.scenario.timezone === item ? 'selected' : ''}>${item}</option>`).join('')}</select>
                 </label>
-                <label class="field" style="grid-column: 1 / -1;">${tt('Scenario summary', 'Résumé du scénario')}<textarea data-bind="scenario.summary">${escapeHtml(scenario.scenario.summary)}</textarea></label>
+                <label class="field" style="grid-column: 1 / -1;">${tt('Scenario summary', 'Résumé du scénario')}
+                  <textarea data-bind="scenario.summary">${escapeHtml(scenario.scenario.summary)}</textarea>
+                  <span class="helper">${tt('Injected into all AI prompts for content generation.', 'Injecté dans tous les prompts IA pour la génération de contenu.')}</span>
+                </label>
+                <label class="field" style="grid-column: 1 / -1;">${tt('Detailed context (optional)', 'Contexte détaillé (optionnel)')}
+                  <textarea data-bind="scenario.detailed_context" rows="5" placeholder="${tt('Timeline, affected systems, attack vector, compromised data...', 'Chronologie, systèmes affectés, vecteur d\'attaque, données compromises...')}">${escapeHtml(scenario.scenario.detailed_context || '')}</textarea>
+                </label>
               </div>
             </article>
 
@@ -329,34 +336,35 @@
                   <button class="btn btn-primary" data-action="add-actor">${tt('Add actor', 'Ajouter un acteur')}</button>
                 </div>
               </div>
-              <table class="table">
-                <thead><tr><th>${tt('Name', 'Nom')}</th><th>${tt('Role', 'Rôle')}</th><th>${tt('Organization', 'Organisation')}</th><th>${tt('Title', 'Titre')}</th><th>${tt('Country', 'Pays')}</th><th>${tt('Actions', 'Actions')}</th></tr></thead>
-                <tbody>
-                  ${scenario.actors.map((actor) => `
-                    <tr>
-                      <td><input type="text" data-actor-bind="${actor.id}.name" value="${escapeAttribute(actor.name)}"></td>
-                      <td>
-                        <select data-actor-bind="${actor.id}.role">
-                          ${ROLES.map((role) => `<option value="${role.value}" ${actor.role === role.value ? 'selected' : ''}>${escapeHtml(roleLabel(role.value))}</option>`).join('')}
-                        </select>
-                      </td>
-                      <td><input type="text" data-actor-bind="${actor.id}.organization" value="${escapeAttribute(actor.organization)}"></td>
-                      <td><input type="text" data-actor-bind="${actor.id}.title" value="${escapeAttribute(actor.title)}"></td>
-                      <td>
-                        <select data-actor-bind="${actor.id}.country">
-                          ${COUNTRIES.map((country) => `<option value="${country}" ${actor.country === country ? 'selected' : ''}>${country}</option>`).join('')}
-                        </select>
-                      </td>
-                      <td>
-                        <div class="actions">
-                          <button class="btn btn-ghost" data-action="duplicate-actor" data-actor-id="${actor.id}">${tt('Duplicate', 'Dupliquer')}</button>
-                          <button class="btn btn-danger" data-action="delete-actor" data-actor-id="${actor.id}">${tt('Delete', 'Supprimer')}</button>
-                        </div>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
+              <div style="overflow-x:auto;">
+                <table class="table">
+                  <thead><tr><th>${tt('Name', 'Nom')}</th><th>${tt('Role', 'Rôle')}</th><th>${tt('Organization', 'Organisation')}</th><th>${tt('Title', 'Titre')}</th><th>${tt('Language', 'Langue')}</th><th>${tt('Actions', 'Actions')}</th></tr></thead>
+                  <tbody>
+                    ${scenario.actors.map((actor) => {
+                      const actorLangOpts = LANGUAGES.map((l) => `<option value="${l.value}" ${(actor.language || 'en') === l.value ? 'selected' : ''}>${l.label}</option>`).join('');
+                      return `<tr>
+                        <td><input type="text" data-actor-bind="${actor.id}.name" value="${escapeAttribute(actor.name)}"></td>
+                        <td>
+                          <select data-actor-bind="${actor.id}.role">
+                            ${ROLES.map((role) => `<option value="${role.value}" ${actor.role === role.value ? 'selected' : ''}>${escapeHtml(roleLabel(role.value))}</option>`).join('')}
+                          </select>
+                        </td>
+                        <td><input type="text" data-actor-bind="${actor.id}.organization" value="${escapeAttribute(actor.organization)}"></td>
+                        <td><input type="text" data-actor-bind="${actor.id}.title" value="${escapeAttribute(actor.title)}"></td>
+                        <td>
+                          <select data-actor-bind="${actor.id}.language">${actorLangOpts}</select>
+                        </td>
+                        <td>
+                          <div class="actions">
+                            <button class="btn btn-ghost" data-action="duplicate-actor" data-actor-id="${actor.id}">${tt('Duplicate', 'Dupliquer')}</button>
+                            <button class="btn btn-danger" data-action="delete-actor" data-actor-id="${actor.id}">${tt('Delete', 'Supprimer')}</button>
+                          </div>
+                        </td>
+                      </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
             </article>
           </section>
         `;
