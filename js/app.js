@@ -4,7 +4,8 @@
         slideshowIndex: 0,
         settingsDrawerOpen: false,
         scenario: loadInitialScenario(),
-        toasts: []
+        toasts: [],
+        libraryFilter: { channel: '', status: '', actorId: '', sort: 'timeline' }
       };
 
       const App = {
@@ -101,6 +102,13 @@
         document.querySelectorAll('[data-action]').forEach((button) => {
           button.addEventListener('click', handleAction);
         });
+
+        document.querySelectorAll('[data-library-filter]').forEach((select) => {
+          select.addEventListener('change', () => {
+            appState.libraryFilter[select.dataset.libraryFilter] = select.value;
+            App.render();
+          });
+        });
       }
 
       async function handleAction(event) {
@@ -162,6 +170,12 @@
             case 'preview-next': appState.slideshowIndex = Math.min(getSortedStimuli().length - 1, appState.slideshowIndex + 1); App.render(); break;
             case 'goto-stimuli': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; appState.route = 'stimuli'; App.render(); break;
             case 'preview-select': appState.slideshowIndex = Number(event.currentTarget.dataset.index); App.render(); break;
+            case 'cycle-status': {
+              const s = getStimulus(event.currentTarget.dataset.stimulusId);
+              if (s) { const cycle = ['draft', 'ready', 'sent']; s.status = cycle[(cycle.indexOf(s.status) + 1) % cycle.length]; await autoSave(); App.render(); }
+              break;
+            }
+            case 'edit-in-stimuli': appState.selectedStimulusId = event.currentTarget.dataset.stimulusId; appState.route = 'stimuli'; App.render(); break;
             default: console.warn(tt('Unhandled action', 'Action non gérée'), action);
           }
         } catch (error) {

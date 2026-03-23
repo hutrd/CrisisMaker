@@ -168,23 +168,86 @@
       }
 
       function renderLibraryView() {
-        const stimuli = getSortedStimuli();
-        if (!stimuli.length) {
+        const allStimuli = getSortedStimuli();
+        if (!allStimuli.length) {
           return `<section class="grid" style="max-width:600px; margin: 60px auto; text-align:center;">
             <p class="subtle">${tt(‘No stimuli yet. Create some in the Stimuli view.’, ‘Aucun stimulus encore. Créez-en dans la vue Stimuli.’)}</p>
             <button class="btn btn-primary" data-action="nav-stimuli">${tt(‘Go to Stimuli’, ‘Aller aux Stimuli’)}</button>
           </section>`;
         }
+        const f = appState.libraryFilter;
+        let filtered = allStimuli;
+        if (f.channel) filtered = filtered.filter((s) => s.channel === f.channel);
+        if (f.status) filtered = filtered.filter((s) => s.status === f.status);
+        if (f.actorId) filtered = filtered.filter((s) => s.actor_id === f.actorId);
+        if (f.sort === ‘updated’) filtered = [...filtered].sort((a, b) => (b.updated_at || ‘’).localeCompare(a.updated_at || ‘’));
+        else if (f.sort === ‘channel’) filtered = [...filtered].sort((a, b) => a.channel.localeCompare(b.channel));
+        else if (f.sort === ‘actor’) filtered = [...filtered].sort((a, b) => (getActor(a.actor_id)?.name || ‘’).localeCompare(getActor(b.actor_id)?.name || ‘’));
+        // default sort = timeline (already sorted by getSortedStimuli)
+
+        const channelOptions = [...new Set(allStimuli.map((s) => s.channel))].sort();
+        const actorOptions = appState.scenario.actors;
+
         return `
           <section class="grid">
-            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-              <span style="color:var(--muted); font-size:0.9rem;">${stimuli.length} ${tt(‘stimuli’, ‘stimuli’)}</span>
-              <button class="btn btn-secondary" data-action="export-all">${tt(‘Export all ZIP’, ‘Exporter tout en ZIP’)}</button>
+            <div class="library-filter-bar">
+              <select data-library-filter="channel">
+                <option value="">${tt(‘All channels’, ‘Tous les canaux’)}</option>
+                ${channelOptions.map((ch) => `<option value="${ch}" ${f.channel === ch ? ‘selected’ : ‘’}>${escapeHtml(channelLabel(ch))}</option>`).join(‘’)}
+              </select>
+              <select data-library-filter="status">
+                <option value="">${tt(‘All statuses’, ‘Tous les statuts’)}</option>
+                <option value="draft" ${f.status === ‘draft’ ? ‘selected’ : ‘’}>${tt(‘Draft’, ‘Brouillon’)}</option>
+                <option value="ready" ${f.status === ‘ready’ ? ‘selected’ : ‘’}>${tt(‘Ready’, ‘Prêt’)}</option>
+                <option value="sent" ${f.status === ‘sent’ ? ‘selected’ : ‘’}>${tt(‘Sent’, ‘Envoyé’)}</option>
+              </select>
+              <select data-library-filter="actorId">
+                <option value="">${tt(‘All actors’, ‘Tous les acteurs’)}</option>
+                ${actorOptions.map((a) => `<option value="${a.id}" ${f.actorId === a.id ? ‘selected’ : ‘’}>${escapeHtml(a.name)}</option>`).join(‘’)}
+              </select>
+              <select data-library-filter="sort">
+                <option value="timeline" ${f.sort === ‘timeline’ ? ‘selected’ : ‘’}>${tt(‘Sort: timeline’, ‘Tri : timeline’)}</option>
+                <option value="updated" ${f.sort === ‘updated’ ? ‘selected’ : ‘’}>${tt(‘Sort: last modified’, ‘Tri : modifié’)}</option>
+                <option value="channel" ${f.sort === ‘channel’ ? ‘selected’ : ‘’}>${tt(‘Sort: channel’, ‘Tri : canal’)}</option>
+                <option value="actor" ${f.sort === ‘actor’ ? ‘selected’ : ‘’}>${tt(‘Sort: actor’, ‘Tri : acteur’)}</option>
+              </select>
+              <span style="color:var(--muted); font-size:0.85rem; margin-left:auto;">${filtered.length}/${allStimuli.length} ${tt(‘stimuli’, ‘stimuli’)}</span>
+              <button class="btn btn-secondary" data-action="export-all">${tt(‘Export ZIP’, ‘Exporter ZIP’)}</button>
             </div>
-            <div class="thumb-grid">
-              ${stimuli.map((s) => renderStimulusCard(s)).join(‘’)}
+            <div class="library-card-grid">
+              ${filtered.map((s) => renderLibraryCard(s)).join(‘’)}
             </div>
           </section>
+        `;
+      }
+
+      function renderLibraryCard(stimulus) {
+        const meta = CHANNEL_META[stimulus.channel] || CHANNEL_META.email_internal;
+        const actor = getActor(stimulus.actor_id);
+        const h = Math.floor(stimulus.timestamp_offset_minutes / 60);
+        const m = String(stimulus.timestamp_offset_minutes % 60).padStart(2, ‘0’);
+        const statusColors = { draft: ‘#888’, ready: ‘#2a7a2a’, sent: ‘#1a3e6f’ };
+        const versionCount = stimulus.history ? stimulus.history.length : 0;
+        return `
+          <div class="library-card">
+            <div class="library-card-header" style="background:${meta.color};">
+              <span class="library-card-channel">${escapeHtml(channelLabel(stimulus.channel))}</span>
+              <span class="library-card-time">H+${h}:${m}</span>
+            </div>
+            <div class="library-card-body">
+              <div class="library-card-actor">${escapeHtml(actor?.name || tt(‘No actor’, ‘Sans acteur’))}</div>
+              <div class="library-card-desc">${escapeHtml(stimulus.fields.subject || stimulus.fields.headline || stimulus.fields.text || stimulus.fields.title || ‘—‘).slice(0, 60)}</div>
+            </div>
+            <div class="library-card-footer">
+              <button class="pill pill-status" style="background:${statusColors[stimulus.status] || ‘#888’}; color:#fff; border:none; cursor:pointer;" data-action="cycle-status" data-stimulus-id="${stimulus.id}" title="${tt(‘Click to change status’, ‘Cliquer pour changer le statut’)}">${escapeHtml(stimulus.status)}${versionCount > 0 ? ` · v${versionCount + 1}` : ‘’}</button>
+              <div class="library-card-actions">
+                <button class="btn btn-xs" data-action="edit-in-stimuli" data-stimulus-id="${stimulus.id}" title="${tt(‘Edit’, ‘Éditer’)}">✏️</button>
+                <button class="btn btn-xs" data-action="duplicate-stimulus" data-stimulus-id="${stimulus.id}" title="${tt(‘Duplicate’, ‘Dupliquer’)}">⧉</button>
+                <button class="btn btn-xs" data-action="export-png" data-stimulus-id="${stimulus.id}" title="${tt(‘Export PNG’, ‘Exporter PNG’)}">⤓</button>
+                <button class="btn btn-xs btn-danger" data-action="delete-stimulus" data-stimulus-id="${stimulus.id}" title="${tt(‘Delete’, ‘Supprimer’)}">✕</button>
+              </div>
+            </div>
+          </div>
         `;
       }
 

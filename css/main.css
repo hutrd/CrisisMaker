@@ -382,6 +382,65 @@
     }
     .thumb-card .thumb-body { padding: 14px; }
 
+    /* Library view */
+    .library-filter-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .library-filter-bar select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: #fff;
+      cursor: pointer;
+    }
+    .library-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .library-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.15s;
+    }
+    .library-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+    .library-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      color: #fff;
+    }
+    .library-card-channel { font-size: 0.8rem; font-weight: 600; }
+    .library-card-time { font-size: 0.75rem; opacity: 0.85; font-variant-numeric: tabular-nums; }
+    .library-card-body {
+      padding: 10px 12px;
+      flex: 1;
+    }
+    .library-card-actor { font-weight: 600; font-size: 0.85rem; margin-bottom: 4px; }
+    .library-card-desc { color: var(--muted); font-size: 0.78rem; line-height: 1.4; }
+    .library-card-footer {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .library-card-actions { display: flex; gap: 4px; }
+    .btn-xs { padding: 3px 7px; font-size: 0.78rem; border-radius: 6px; }
+
     .toast-stack {
       position: fixed;
       right: 24px;
