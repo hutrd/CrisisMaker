@@ -10,7 +10,8 @@
         llmState: {
           scenario: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 },
           actors:   { text: '', collapsed: false, loading: false, error: null, pendingActors: null },
-          stimulus: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 }
+          stimulus: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 },
+          stimuli_batch: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 }
         }
       };
 
@@ -279,14 +280,34 @@
               state.loading = true; state.error = null; state.lastFilledCount = 0; App.render();
               try {
                 const result = await AITextGenerator.generateStimulusConfig(state.text, appState.scenario, appState.scenario.actors);
-                if (Array.isArray(result)) {
-                  await handleMultiStimulusResult(result);
+                const multiple = Array.isArray(result) ? result : (Array.isArray(result?.stimuli) ? result.stimuli : null);
+                if (multiple) {
+                  await handleMultiStimulusResult(multiple, state.text);
+                  state.lastFilledCount = multiple.length;
                 } else {
                   await applyStimulusConfig(selected, result);
                   const filled = Object.keys(result.fields || {}).length + 3;
                   state.lastFilledCount = filled;
                 }
                 state.loading = false;
+                App.render();
+              } catch (err) {
+                state.loading = false;
+                state.error = classifyLLMError(err);
+                App.render();
+              }
+              break;
+            }
+            case 'llm-generate-stimuli_batch': {
+              const state = appState.llmState.stimuli_batch;
+              if (!state.text.trim()) { state.error = 'empty'; App.render(); break; }
+              state.loading = true; state.error = null; state.lastFilledCount = 0; App.render();
+              try {
+                const result = await AITextGenerator.generateStimulusConfig(state.text, appState.scenario, appState.scenario.actors);
+                const configs = Array.isArray(result) ? result : (Array.isArray(result?.stimuli) ? result.stimuli : [result]);
+                const addedCount = await handleMultiStimulusResult(configs, state.text);
+                state.loading = false;
+                state.lastFilledCount = addedCount;
                 App.render();
               } catch (err) {
                 state.loading = false;
@@ -602,15 +623,20 @@
         stimulus.updated_at = new Date().toISOString();
       }
 
-      async function handleMultiStimulusResult(configs) {
-        configs.forEach((config) => {
+      async function handleMultiStimulusResult(configs, fallbackPrompt = '') {
+        const validConfigs = configs.filter((config) => config && typeof config === 'object');
+        validConfigs.forEach((config) => {
           const actorId = appState.scenario.actors[0]?.id;
           const stimulus = makeStimulus(config.channel || 'email_internal', actorId, config.timestamp_offset_minutes || 0, config.template_id || null);
+          if (!config.generation_prompt && fallbackPrompt) config.generation_prompt = fallbackPrompt;
           applyStimulusConfig(stimulus, config);
           appState.scenario.stimuli.push(stimulus);
         });
         appState.selectedStimulusId = appState.scenario.stimuli[appState.scenario.stimuli.length - 1]?.id || null;
-        pushToast(tt(`${configs.length} stimuli added to timeline.`, `${configs.length} stimuli ajoutés à la timeline.`), 'success');
+        if (validConfigs.length > 0) {
+          pushToast(tt(`${validConfigs.length} stimuli added to timeline.`, `${validConfigs.length} stimuli ajoutés à la timeline.`), 'success');
+        }
+        return validConfigs.length;
       }
 
       App.init();

@@ -17,15 +17,20 @@
         return 'malformed';
       }
 
-      function renderLLMConfigBlock(zone, placeholder) {
+      function renderLLMConfigBlock(zone, placeholder, options = {}) {
         const state = appState.llmState[zone];
         const available = isLLMAvailable();
         const collapsed = state.collapsed;
         const loading = state.loading;
+        const title = options.title || tt('Configure with LLM', 'Configurer avec le LLM');
+        const subtitle = options.subtitle || tt(
+          'Describe what you want in natural language. If information is missing, the LLM will fill in the most likely values.',
+          'Décrivez ce que vous voulez en langage naturel. Si des informations manquent, le LLM complétera avec les valeurs les plus probables.'
+        );
 
         const generateLabel = loading
-          ? tt('Generating…', 'Génération en cours…')
-          : tt('Generate ✨', 'Générer ✨');
+          ? (options.loadingLabel || tt('Generating…', 'Génération en cours…'))
+          : (options.generateLabel || tt('Generate ✨', 'Générer ✨'));
         const disabledAttr = (!available || loading) ? 'disabled' : '';
         const noKeyTooltip = !available
           ? escapeAttribute(tt(
@@ -42,9 +47,13 @@
           ? renderPendingActorsPanel(state.pendingActors)
           : '';
 
+        const successMessage = options.successMessage
+          ? options.successMessage(state.lastFilledCount)
+          : tt(`${state.lastFilledCount} field(s) pre-filled by the LLM. Check and adjust if needed.`, `${state.lastFilledCount} champ(s) pré-rempli(s) par le LLM. Vérifiez et ajustez si nécessaire.`);
+
         const successBannerHtml = (zone !== 'actors' && state.lastFilledCount > 0 && !loading && !state.error)
           ? `<div class="llm-success-banner">
-              <span>✅ ${tt(`${state.lastFilledCount} field(s) pre-filled by the LLM. Check and adjust if needed.`, `${state.lastFilledCount} champ(s) pré-rempli(s) par le LLM. Vérifiez et ajustez si nécessaire.`)}</span>
+              <span>✅ ${successMessage}</span>
               <button data-action="llm-dismiss-banner" data-zone="${zone}">OK</button>
              </div>`
           : '';
@@ -52,16 +61,13 @@
         return `
           <div class="llm-config-block${collapsed ? ' collapsed' : ''}" id="llm-block-${zone}">
             <div class="llm-config-header">
-              <span class="llm-config-title">🤖 ${tt('Configure with LLM', 'Configurer avec le LLM')}</span>
+              <span class="llm-config-title">🤖 ${title}</span>
               <button class="btn-llm-collapse" data-action="llm-collapse" data-zone="${zone}">
                 ${collapsed ? '▶ ' + tt('Expand', 'Développer') : '▼ ' + tt('Reduce', 'Réduire')}
               </button>
             </div>
             <div class="llm-config-body">
-              <p class="llm-config-subtitle">${tt(
-                'Describe what you want in natural language. If information is missing, the LLM will fill in the most likely values.',
-                'Décrivez ce que vous voulez en langage naturel. Si des informations manquent, le LLM complétera avec les valeurs les plus probables.'
-              )}</p>
+              <p class="llm-config-subtitle">${subtitle}</p>
               <textarea
                 data-llm-zone="${zone}"
                 placeholder="${escapeAttribute(placeholder)}"
@@ -564,6 +570,19 @@
         const ticks = Array.from({ length: Math.ceil(maxOffset / 60) + 2 }, (_, index) => index);
         return `
           <section class="grid">
+            ${renderLLMConfigBlock('stimuli_batch', tt(
+              'Ex: "Create 30 stimuli: 3 from international press, 2 from authorities, 20 internal emails, and 5 external emails from client and regulator."',
+              'Ex : "Crée 30 stimuli : 3 articles de presse internationale, 2 messages d’autorité, 20 emails internes et 5 emails externes de clients et du régulateur."'
+            ), {
+              title: tt('Generate a batch with LLM', 'Générer un lot avec le LLM'),
+              subtitle: tt(
+                'Describe the batch you want and the LLM will add every requested stimulus to the timeline in one go.',
+                'Décrivez le lot souhaité et le LLM ajoutera tous les stimuli demandés à la timeline en une seule fois.'
+              ),
+              generateLabel: tt('Generate batch ✨', 'Générer le lot ✨'),
+              loadingLabel: tt('Generating batch…', 'Génération du lot…'),
+              successMessage: (count) => tt(`${count} stimulus/stimuli generated and added to the timeline.`, `${count} stimulus généré(s) et ajouté(s) à la timeline.`)
+            })}
             <article class="card">
               <div class="section-header">
                 <h3>${tt('Timeline', 'Timeline')}</h3>
