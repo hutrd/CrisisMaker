@@ -7,15 +7,10 @@
         toasts: [],
         libraryFilter: { channel: '', status: '', actorId: '', sort: 'timeline' },
         historyModalStimulusId: null,
-        llmState: makeDefaultLLMState()
+        llmState: makeDefaultLLMState(),
         ui: {
           stimuliTimelineHeight: 255,
           stimuliEditorWidth: 42
-        },
-        llmState: {
-          scenario: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 },
-          actors:   { text: '', collapsed: false, loading: false, error: null, pendingActors: null },
-          stimulus: { text: '', collapsed: false, loading: false, error: null, lastFilledCount: 0 }
         },
         connectionTest: { status: 'idle', message: '', checkedAt: null, provider: '' }
       };
