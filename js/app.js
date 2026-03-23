@@ -17,7 +17,7 @@
           window.addEventListener('beforeunload', () => saveLocal());
         },
         startAutosave() {
-          setInterval(() => saveLocal(false), 30000);
+          startAutoSave();
         },
         render() {
           const root = document.getElementById('app');
@@ -117,6 +117,16 @@
               break;
             }
             case 'save-local': saveLocal(); break;
+            case 'save-file': {
+              if (_fileHandle) {
+                await writeToFile();
+                pushToast(tt('Saved to file.', 'Sauvegardé dans le fichier.'), 'success');
+              } else {
+                await saveToFileFirstTime();
+                App.render();
+              }
+              break;
+            }
             case 'nav-scenario': appState.route = 'scenario'; App.render(); break;
             case 'nav-stimuli': appState.route = 'stimuli'; App.render(); break;
             case 'nav-library': appState.route = 'library'; App.render(); break;

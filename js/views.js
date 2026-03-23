@@ -28,6 +28,7 @@
                 <span class="nav-project-name">${escapeHtml(appState.scenario.name || ‘CrisisStim’)}</span>
               </div>
               <div class="nav-topbar-right">
+                <span id="save-indicator" style="color:rgba(255,255,255,0.5); font-size:0.75rem; margin-right:8px;"></span>
                 <button class="nav-gear-btn ${appState.settingsDrawerOpen ? ‘active’ : ‘’}" data-action="toggle-settings-drawer" title="${tt(‘Settings’, ‘Paramètres’)}">
                   ${svgGear()}
                 </button>

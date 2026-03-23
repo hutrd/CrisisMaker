@@ -1,4 +1,55 @@
 
+      // Level 1: File System Access API (Chrome/Edge)
+      let _fileHandle = null;
+
+      const supportsFileSystemAccess = () => typeof window !== 'undefined' && 'showSaveFilePicker' in window;
+
+      async function saveToFileFirstTime() {
+        if (!supportsFileSystemAccess()) return false;
+        try {
+          _fileHandle = await window.showSaveFilePicker({
+            suggestedName: `${slugify(appState.scenario.name || 'crisisstim')}.crisisstim.json`,
+            types: [{ description: 'CrisisStim Project', accept: { 'application/json': ['.crisisstim.json', '.json'] } }]
+          });
+          return await writeToFile();
+        } catch (e) {
+          if (e.name !== 'AbortError') console.warn('File picker error', e);
+          return false;
+        }
+      }
+
+      async function writeToFile() {
+        if (!_fileHandle) return false;
+        try {
+          const exportData = JSON.parse(JSON.stringify(appState.scenario));
+          exportData.settings = { ...exportData.settings, ai_api_key: '', azure_api_key: '' }; // never export keys
+          const writable = await _fileHandle.createWritable();
+          await writable.write(JSON.stringify(exportData, null, 2));
+          await writable.close();
+          return true;
+        } catch (e) {
+          console.warn('File write failed', e);
+          _fileHandle = null; // handle invalidated
+          return false;
+        }
+      }
+
+      async function openWithFileSystemAPI() {
+        if (!supportsFileSystemAccess()) return null;
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            types: [{ description: 'CrisisStim Project', accept: { 'application/json': ['.crisisstim.json', '.json'] } }]
+          });
+          _fileHandle = handle;
+          const file = await handle.getFile();
+          return JSON.parse(await file.text());
+        } catch (e) {
+          if (e.name !== 'AbortError') console.warn('File open error', e);
+          return null;
+        }
+      }
+
+      // Level 2: localStorage (always active)
       function saveLocal(showToast = true) {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.scenario));
@@ -6,8 +57,36 @@
           persistProviderSettings(appState.scenario.settings);
           if (showToast) pushToast(tt('Scenario saved locally.', 'Scénario enregistré localement.'), 'success');
         } catch (error) {
-          pushToast(tt(`Local save failed: ${error.message}`, `Échec de la sauvegarde locale : ${error.message}`), 'error');
+          if (error.name === 'QuotaExceededError') {
+            pushToast(tt('Browser storage full. Export your project as JSON.', 'Stockage navigateur plein. Exportez votre projet en JSON.'), 'error');
+          } else {
+            pushToast(tt(`Local save failed: ${error.message}`, `Échec de la sauvegarde locale : ${error.message}`), 'error');
+          }
         }
+      }
+
+      // Auto-save: calls both localStorage and File System API
+      async function autoSave() {
+        appState.scenario.updated_at = new Date().toISOString();
+        saveLocal(false);
+        if (_fileHandle) await writeToFile();
+        updateSaveIndicator();
+      }
+
+      function updateSaveIndicator() {
+        const el = document.getElementById('save-indicator');
+        if (!el) return;
+        const now = new Date();
+        const msg = _fileHandle
+          ? tt(`Saved (file + browser)`, `Sauvegardé (fichier + navigateur)`)
+          : tt(`Saved (browser)`, `Sauvegardé (navigateur)`);
+        el.textContent = msg;
+        el.title = now.toLocaleTimeString();
+      }
+
+      function startAutoSave() {
+        const interval = (appState.scenario?.settings?.auto_save_interval_seconds || 30) * 1000;
+        if (interval > 0) setInterval(autoSave, interval);
       }
 
       function loadProviderSettings() {
@@ -76,19 +155,25 @@
       }
 
       function loadScenarioFromFile() {
+        // Try File System Access API first (Chrome/Edge)
+        if (supportsFileSystemAccess()) {
+          openWithFileSystemAPI().then((data) => {
+            if (!data) return;
+            applyLoadedScenario(data);
+          });
+          return;
+        }
+        // Fallback: classic file input
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json,application/json';
+        input.accept = '.json,.crisisstim.json,application/json';
         input.addEventListener('change', (event) => {
           const file = event.target.files?.[0];
           if (!file) return;
           const reader = new FileReader();
           reader.onload = (loadEvent) => {
             try {
-              appState.scenario = mergeScenario(JSON.parse(loadEvent.target.result));
-              appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
-              App.render();
-              pushToast(tt('Scenario loaded successfully.', 'Scénario chargé avec succès.'), 'success');
+              applyLoadedScenario(JSON.parse(loadEvent.target.result));
             } catch (error) {
               pushToast(tt(`Invalid JSON file: ${error.message}`, `Fichier JSON invalide : ${error.message}`), 'error');
             }
@@ -96,6 +181,23 @@
           reader.readAsText(file);
         });
         input.click();
+      }
+
+      function applyLoadedScenario(data) {
+        try {
+          appState.scenario = mergeScenario(migrateScenario(data));
+          // restore API key from localStorage (never stored in file)
+          const savedApiKey = localStorage.getItem('crisisstim_api_key');
+          if (savedApiKey && !appState.scenario.settings.ai_api_key) {
+            appState.scenario.settings.ai_api_key = savedApiKey;
+          }
+          appState.selectedStimulusId = appState.scenario.stimuli[0]?.id || null;
+          appState.route = 'project';
+          App.render();
+          pushToast(tt('Scenario loaded successfully.', 'Scénario chargé avec succès.'), 'success');
+        } catch (error) {
+          pushToast(tt(`Load failed: ${error.message}`, `Chargement échoué : ${error.message}`), 'error');
+        }
       }
 
       function downloadBlob(blob, filename) {
