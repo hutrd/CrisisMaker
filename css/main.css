@@ -946,6 +946,244 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .content {
+        padding: 12px;
+        gap: 12px;
+      }
+      .card {
+        padding: 14px;
+      }
+      .topbar {
+        padding: 12px;
+      }
+      .page-title h2 {
+        font-size: 1.12rem;
+      }
+      .status-pills {
+        gap: 6px;
+      }
+      .pill {
+        font-size: 0.78rem;
+        padding: 6px 9px;
+      }
+
+      .nav-topbar {
+        min-height: auto;
+        padding: 8px 10px 10px;
+        gap: 8px;
+      }
+      .nav-topbar-right {
+        width: 100%;
+        margin-right: 0;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+      .nav-clear-btn {
+        margin-right: 0;
+        width: 100%;
+      }
+      .nav-topbar-left {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+      .nav-topbar-left::-webkit-scrollbar {
+        height: 6px;
+      }
+      .nav-icon-btn {
+        min-width: 54px;
+        height: 56px;
+        gap: 2px;
+      }
+      .nav-icon-btn span {
+        font-size: 0.56rem;
+      }
+      .settings-drawer {
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .actions {
+        width: 100%;
+      }
+      .btn {
+        justify-content: center;
+      }
+      .actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .preview-toolbar {
+        top: 76px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .preview-toolbar-inline {
+        flex-wrap: wrap;
+      }
+
+      .timeline-track {
+        min-width: 720px;
+      }
+      .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .helper {
+        font-size: 0.82rem;
+      }
+
+      .hero-card {
+        padding: 20px;
+        border-radius: 20px;
+      }
+      .hero-card h1 {
+        font-size: 1.55rem;
+        max-width: 100%;
+      }
+      .hero-card p {
+        font-size: 0.94rem;
+      }
+
+      .toast-stack {
+        right: 12px;
+        left: 12px;
+        bottom: 12px;
+      }
+      .toast {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .modal-box {
+        width: calc(100vw - 16px);
+        max-height: calc(100vh - 16px);
+      }
+      .modal-header,
+      .history-entry {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .settings-drawer-header,
+      .settings-drawer-body {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .render-frame {
+        width: 100% !important;
+        max-width: 100%;
+      }
+      .outlook-email,
+      .tweet,
+      .press-article,
+      .lm-article,
+      .nyt-article,
+      .faz-article,
+      .ft-article,
+      .reddit-page,
+      .linkedin-card,
+      .authority-email,
+      .press-release,
+      .sms-shell {
+        width: 100%;
+        max-width: 100%;
+      }
+      .outlook-subject,
+      .press-headline,
+      .nyt-headline,
+      .faz-headline,
+      .ft-headline,
+      .pr-title {
+        font-size: clamp(1.4rem, 6.4vw, 2rem);
+      }
+      .outlook-content,
+      .press-content,
+      .nyt-content,
+      .faz-content,
+      .ft-content,
+      .pr-body {
+        font-size: 1rem;
+      }
+      .nyt-body,
+      .faz-body,
+      .ft-body {
+        width: 100%;
+      }
+      .nyt-rail,
+      .faz-header,
+      .faz-nav,
+      .ft-header,
+      .press-body,
+      .press-release,
+      .authority-content {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      .authority-header {
+        padding: 14px;
+      }
+      .bfm-banner {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+      .sms-screen {
+        min-height: 560px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .content {
+        padding: 10px;
+      }
+      .card {
+        border-radius: 14px;
+      }
+      .nav-brand-eyebrow {
+        font-size: 0.62rem;
+      }
+      .nav-project-name {
+        font-size: 0.9rem;
+      }
+      .nav-icon-btn {
+        min-width: 50px;
+      }
+      .settings-drawer-header h3 {
+        font-size: 0.95rem;
+      }
+      .btn {
+        width: 100%;
+      }
+      .outlook-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+      }
+      .tweet-metrics {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .reddit-card {
+        grid-template-columns: 1fr;
+      }
+      .reddit-votes {
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 6px 10px;
+      }
+      .sms-screen {
+        min-height: 500px;
+      }
+    }
+
     /* === Configure with LLM block === */
     .llm-config-block {
       background: #F0F4FF;
