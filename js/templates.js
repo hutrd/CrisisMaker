@@ -659,7 +659,7 @@
               <div class="li-text">${escapeHtml(trimmed)}${showMore ? `<div class="li-see-more">${tt('…see more', '…voir plus')}</div>` : ''}</div>
               <div class="li-stats"><span>${reactions}</span><span>${formatMetric(f.reactions_count)} ${tt('reactions', 'réactions')} · ${formatMetric(f.comments_count)} ${tt('comments', 'commentaires')} · ${formatMetric(f.reposts_count)} ${tt('reposts', 'republications')}</span></div>
               <div class="li-divider"></div>
-              <div class="li-actions"><strong>👍 ${tt('Like', 'J'aime')}</strong><strong>💬 ${tt('Comment', 'Commenter')}</strong><strong>🔁 ${tt('Repost', 'Republier')}</strong><strong>📤 ${tt('Send', 'Envoyer')}</strong></div>
+              <div class="li-actions"><strong>👍 ${tt('Like', "J'aime")}</strong><strong>💬 ${tt('Comment', 'Commenter')}</strong><strong>🔁 ${tt('Repost', 'Republier')}</strong><strong>📤 ${tt('Send', 'Envoyer')}</strong></div>
             </article>
           `;
         },
