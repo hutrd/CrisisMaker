@@ -815,6 +815,7 @@
     .faz-hd-header-right { display: flex; align-items: center; gap: 12px; }
     .faz-hd-icon { display: inline-flex; cursor: pointer; }
     .faz-hd-meta-link { display: inline-flex; align-items: center; gap: 4px; font: 11px/1 'Inter', Arial, sans-serif; letter-spacing: 0.05em; color: #333; cursor: pointer; }
+    .faz-hd-wordmark { font-family: 'UnifrakturMaguntia', 'Old English Text MT', 'Playfair Display', Georgia, serif; font-size: 22px; line-height: 1; color: #1a1a1a; white-space: nowrap; }
     .faz-hd-sub-btn { background: #8a7a2a; color: #fff; font: 700 12px/1 'Inter', Arial, sans-serif; padding: 7px 14px; border-radius: 2px; cursor: pointer; white-space: nowrap; }
     .faz-hd-user { display: inline-flex; cursor: pointer; }
     .faz-body { width: 680px; margin: 0 auto; padding-top: 26px; }
@@ -908,11 +909,14 @@
     .nikkei-browser { background: #e8eef4; }
 
     /* ── HD NYT extras ──────────────────── */
+    .hd .nyt-masthead-row { grid-template-columns: auto 1fr; }
+    .hd .nyt-masthead-row .nyt-nav { justify-self: end; }
     .nyt-hd-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: #fff; border-bottom: 1px solid #dfdfdf; }
     .nyt-hd-topbar-left { display: flex; align-items: center; gap: 14px; }
     .nyt-hd-topbar-center { display: flex; align-items: center; }
     .nyt-hd-topbar-right { display: flex; align-items: center; }
     .nyt-hd-menu, .nyt-hd-search-icon { display: inline-flex; cursor: pointer; color: #121212; }
+    .nyt-hd-wordmark { font-family: 'UnifrakturMaguntia', 'Old English Text MT', 'Playfair Display', Georgia, serif; font-size: 26px; line-height: 1; color: #000; white-space: nowrap; }
     .nyt-hd-login { font: 700 12px/1 Arial, sans-serif; letter-spacing: 0.06em; background: #666; color: #fff; padding: 7px 12px; border-radius: 2px; cursor: pointer; }
     .nyt-hd-share { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid #e2e2e2; }
     .nyt-hd-share svg { width: 20px; height: 20px; stroke: #666; fill: none; cursor: pointer; }
