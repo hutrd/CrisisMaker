@@ -1,5 +1,96 @@
 
-      // Level 1: File System Access API (Chrome/Edge)
+// --- Watermark util ---------------------------------------------------------
+// Dessine un watermark rouge "EXERCICE" sur un canvas donné.
+function addWatermarkToCanvas(
+  canvas,
+  {
+    text = "exercice",
+    fontFamily = "Segoe UI, Roboto, Arial, sans-serif",
+    fontScale = 0.12,             // ~12% de la largeur du canvas (un gros tampon lisible)
+    color = "rgba(220, 0, 0, 0.22)", // rouge translucide
+    shadowColor = "rgba(0,0,0,0.10)",
+    shadowBlur = 2,
+    angleDeg = -30,               // en diagonale
+    single = true,                // un seul gros watermark centré (lisible sur export)
+    repeat = false,               // si tu veux une grille répétée, passe à true + règle gapX/gapY
+    gapX = 0.22,
+    gapY = 0.22,
+    padding = 16
+  } = {}
+) {
+  if (!(canvas instanceof HTMLCanvasElement)) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const baseSize = Math.max(12, Math.round(W * fontScale));
+
+  ctx.save();
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.font = `bold ${baseSize}px ${fontFamily}`;
+  ctx.fillStyle = color;
+  ctx.shadowColor = shadowColor;
+  ctx.shadowBlur = shadowBlur;
+
+  // Pivot au centre et rotation
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate((Math.PI / 180) * angleDeg);
+
+  const draw = (x, y, s = baseSize) => {
+    const upper = String(text || "").toUpperCase();
+    const factor = upper.length > 12 ? 0.9 : 1.0;
+    ctx.font = `800 ${Math.round(s * factor)}px ${fontFamily}`;
+    ctx.fillText(upper, x + padding, y + padding);
+  };
+
+  if (single || !repeat) {
+    draw(0, 0, baseSize);
+  } else {
+    const stepX = W * gapX;
+    const stepY = H * gapY;
+    const diag = Math.sqrt(W * W + H * H);
+    for (let y = -diag / 2 - stepY * 2; y <= diag / 2 + stepY * 2; y += stepY) {
+      for (let x = -diag / 2 - stepX * 2; x <= diag / 2 + stepX * 2; x += stepX) {
+        draw(x, y, baseSize);
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+// À partir d'un Data URL PNG, renvoie un nouveau Data URL PNG avec watermark.
+async function addWatermarkToDataUrl(dataUrl, wmOptions = {}) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    // dataUrl local -> pas besoin de crossOrigin
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth || img.width;
+      c.height = img.naturalHeight || img.height;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+
+      addWatermarkToCanvas(c, wmOptions);
+
+      try {
+        const out = c.toDataURL("image/png");
+        resolve(out);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+      
+
+
+// Level 1: File System Access API (Chrome/Edge)
       let _fileHandle = null;
 
       const supportsFileSystemAccess = () => typeof window !== 'undefined' && 'showSaveFilePicker' in window;
@@ -113,52 +204,73 @@
 
 
       const ExportEngine = {
-        async exportStimulus(stimulus) {
-          let element = document.getElementById(`render-${stimulus.id}`) || document.getElementById('fullscreen-preview');
-          let sandbox = null;
-          if (!element) {
-            sandbox = document.createElement('div');
-            sandbox.style.cssText = 'position:fixed;left:-99999px;top:0;pointer-events:none;';
-            document.body.appendChild(sandbox);
-            sandbox.innerHTML = renderStimulusPreview(stimulus, `export-sandbox-${stimulus.id}`);
-            element = sandbox.firstElementChild;
-          }
-          try {
-            const dataUrl = await htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
-            this.downloadDataUrl(dataUrl, this.filenameForStimulus(stimulus));
-            pushToast(tt('Stimulus exported as PNG.', 'Stimulus exporté en PNG.'), 'success');
-          } finally {
-            if (sandbox) document.body.removeChild(sandbox);
-          }
-        },
-        async exportRawEmail(stimulus) {
-          if (!stimulus) throw new Error(tt('No stimulus selected.', 'Aucun stimulus sélectionné.'));
-          if (!this.isEmailStimulus(stimulus)) throw new Error(tt('Only email stimuli can be exported as .msg.', 'Seuls les stimuli e-mail peuvent être exportés en .msg.'));
-          const content = this.buildRawEmailContent(stimulus);
-          const blob = new Blob([content], { type: 'application/vnd.ms-outlook' });
-          downloadBlob(blob, this.filenameForRawEmail(stimulus));
-          pushToast(tt('Email exported as .msg.', 'E-mail exporté en .msg.'), 'success');
-        },
-        async exportAll() {
-          const zip = new JSZip();
-          const stimuli = getSortedStimuli();
-          if (!stimuli.length) throw new Error(tt('No stimulus to export.', 'Aucun stimulus à exporter.'));
-          const sandbox = document.createElement('div');
-          sandbox.style.position = 'fixed';
-          sandbox.style.left = '-99999px';
-          sandbox.style.top = '0';
-          document.body.appendChild(sandbox);
-          for (const stimulus of stimuli) {
-            sandbox.innerHTML = renderStimulusPreview(stimulus, `zip-${stimulus.id}`);
-            const node = sandbox.firstElementChild;
-            const dataUrl = await htmlToImage.toPng(node, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
-            zip.file(this.filenameForStimulus(stimulus), dataUrl.split(',')[1], { base64: true });
-          }
-          document.body.removeChild(sandbox);
-          const blob = await zip.generateAsync({ type: 'blob' });
-          downloadBlob(blob, `crisismaker_${slugify(appState.scenario.name)}_exports.zip`);
-          pushToast(tt('ZIP archive generated.', 'Archive ZIP générée.'), 'success');
-        },
+
+async exportStimulus(stimulus) {
+  let element = document.getElementById(`render-${stimulus.id}`) || document.getElementById('fullscreen-preview');
+  let sandbox = null;
+  if (!element) {
+    sandbox = document.createElement('div');
+    sandbox.style.cssText = 'position:fixed;left:-99999px;top:0;pointer-events:none;';
+    document.body.appendChild(sandbox);
+    sandbox.innerHTML = renderStimulusPreview(stimulus, `export-sandbox-${stimulus.id}`);
+    element = sandbox.firstElementChild;
+  }
+  try {
+    const dataUrl = await htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
+
+    // ✅ Ajout watermark ici
+    const watermarked = await addWatermarkToDataUrl(dataUrl, {
+      text: "exercice",
+      color: "rgba(220,0,0,0.22)",
+      angleDeg: -30,
+      single: true,  // un seul gros tampon centré
+      repeat: false,
+      fontScale: 0.12
+    });
+
+    this.downloadDataUrl(watermarked, this.filenameForStimulus(stimulus));
+    pushToast(tt('Stimulus exported as PNG.', 'Stimulus exporté en PNG.'), 'success');
+  } finally {
+    if (sandbox) document.body.removeChild(sandbox);
+  }
+},
+
+
+async exportAll() {
+  const zip = new JSZip();
+  const stimuli = getSortedStimuli();
+  if (!stimuli.length) throw new Error(tt('No stimulus to export.', 'Aucun stimulus à exporter.'));
+  const sandbox = document.createElement('div');
+  sandbox.style.position = 'fixed';
+  sandbox.style.left = '-99999px';
+  sandbox.style.top = '0';
+  document.body.appendChild(sandbox);
+
+  for (const stimulus of stimuli) {
+    sandbox.innerHTML = renderStimulusPreview(stimulus, `zip-${stimulus.id}`);
+    const node = sandbox.firstElementChild;
+    const dataUrl = await htmlToImage.toPng(node, { quality: 1.0, pixelRatio: 2, backgroundColor: '#FFFFFF' });
+
+    // ✅ Ajout watermark ici aussi
+    const watermarked = await addWatermarkToDataUrl(dataUrl, {
+      text: "exercice",
+      color: "rgba(220,0,0,0.22)",
+      angleDeg: -30,
+      single: true,
+      repeat: false,
+      fontScale: 0.12
+    });
+
+    // On garde le format base64 comme dans ta version actuelle
+    zip.file(this.filenameForStimulus(stimulus), watermarked.split(',')[1], { base64: true });
+  }
+
+  document.body.removeChild(sandbox);
+  const blob = await zip.generateAsync({ type: 'blob' });
+  downloadBlob(blob, `crisismaker_${slugify(appState.scenario.name)}_exports.zip`);
+  pushToast(tt('ZIP archive generated.', 'Archive ZIP générée.'), 'success');
+},
+
         filenameForStimulus(stimulus) {
           const actor = getActor(stimulus.actor_id);
           return `${slugify(appState.scenario.name)}_H+${String(Math.floor(stimulus.timestamp_offset_minutes / 60)).padStart(2, '0')}_${stimulus.channel}_${slugify(actor?.name || 'acteur')}.png`;
