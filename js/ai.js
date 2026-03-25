@@ -179,6 +179,7 @@ CONSIGNES :
 - Si l'utilisateur demande un lot ("crée 30 stimuli…" avec des catégories), retourne EXACTEMENT le nombre demandé et répartis les timestamps de façon crédible si aucun horaire précis n'est donné
 - Pour les stimuli externes ("client", "regulator", "press", etc.), alterne les acteurs/sources pour refléter la répartition demandée
 - Génère le contenu des champs dans la LANGUE NATIVE DU MÉDIA
+- Règle stricte média presse : si template_id = "lemonde", tout le contenu textuel doit être en français ; si template_id = "nyt", tout le contenu textuel doit être en anglais
 - Pour les informations NON mentionnées, INVENTE des détails réalistes cohérents
 - Le champ generation_mode doit être "ai_guided"
 - Si l'utilisateur décrit PLUSIEURS stimuli, retourne un TABLEAU JSON d'objets. Si UN SEUL stimulus, retourne un objet unique.
@@ -195,8 +196,8 @@ CHAMPS À REMPLIR DANS "fields" selon le canal (génère un contenu réaliste et
 - email_internal: subject, from_name, from_email, to, body (HTML avec <p> et <strong>), date, importance ("normal"|"high")
 - email_external: subject, from_name, from_email, to, body (HTML), date
 - email_authority: subject, from_name, from_email, to, body (HTML), severity ("critical"|"high"|"medium"), reference, date
-- article_press (lemonde): headline, subheadline, author, date, category, body (HTML 3-4 paragraphes), image_caption, read_time
-- article_press (nyt): headline, subheadline, author, date, category, body (HTML), image_caption, read_time, location
+- article_press (lemonde): headline, subheadline, author, date, category, body (HTML 3-4 paragraphes), image_caption, read_time — langue obligatoire : français
+- article_press (nyt): headline, subheadline, author, date, category, body (HTML), image_caption, read_time, location — language required: English
 - article_press (faz): kicker, headline, subheadline, author, date, category, body (HTML), image_caption, content_type
 - article_press (ft): headline, subheadline, author, date, category, body (HTML), image_caption, content_type
 - post_twitter: text (≤280 car.), display_name, handle, date, verified (true|false), replies, retweets, likes, views
