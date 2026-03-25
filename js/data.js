@@ -73,7 +73,7 @@
           actors,
           stimuli: [],
           custom_templates: [],
-          settings: { language: 'en', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '', max_versions: 3, auto_save_interval_seconds: 30, template_quality: 'basic' }
+          settings: { language: 'en', ai_provider: 'anthropic', ai_model: 'claude-sonnet-4-20250514', ai_api_key: '', azure_endpoint: '', azure_api_key: '', azure_deployment: '', max_versions: 3, auto_save_interval_seconds: 30, template_quality: 'hd' }
         };
         const samples = [
           makeStimulus('email_internal', actors[1].id, 0),
@@ -212,7 +212,7 @@
         if (raw.settings) {
           if (!raw.settings.max_versions) raw.settings.max_versions = 3;
           if (!raw.settings.auto_save_interval_seconds) raw.settings.auto_save_interval_seconds = 30;
-          if (!raw.settings.template_quality) raw.settings.template_quality = 'basic';
+          if (!raw.settings.template_quality) raw.settings.template_quality = 'hd';
         }
         // Add custom_templates array
         if (!Array.isArray(raw.custom_templates)) raw.custom_templates = [];
